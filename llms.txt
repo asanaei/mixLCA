@@ -1,0 +1,180 @@
+# mixLCA
+
+Partitioned latent class analysis for R, with mixed-type indicators,
+concomitant predictors, distal outcomes, and a low-rank treatment of
+local dependence (Spectral Local Dependence, SLD).
+
+Website: <https://asanaei.github.io/mixLCA/>
+
+## What it does
+
+- **Mixed indicators.** Continuous (multivariate normal with optional
+  graphical-lasso penalisation) and categorical (product-multinomial),
+  jointly or alone.
+- **Partitioned architecture.** Antecedent concomitant predictors enter
+  via multinomial logistic regression on class membership;
+  contemporaneous manifest indicators define the measurement model;
+  subsequent distal outcomes are estimated separately under
+  Bollen-Croon-Hagenaars (BCH) inverse-classification-error weighting.
+- **Local dependence.** Direct effects between categorical pairs
+  (Hagenaars-Vermunt specification search via
+  [`auto_bvr()`](https://asanaei.github.io/mixLCA/reference/auto_bvr.md))
+  and Spectral Local Dependence
+  ([`auto_sld()`](https://asanaei.github.io/mixLCA/reference/auto_sld.md)),
+  a rank-d eigendecomposition of the conditional Burt matrix.
+- **Honest standard errors.** Full-Hessian SEs for continuous
+  parameters, sandwich SEs with NA-on-failure for distal regressions.
+
+## Installation
+
+``` r
+# install.packages("remotes")
+remotes::install_github("asanaei/mixLCA")
+```
+
+The package compiles C++ via Rcpp and RcppArmadillo, so you will need a
+working compiler toolchain.
+
+## Quick start
+
+``` r
+library(mixLCA)
+
+data("PimaIndiansDiabetes2", package = "mlbench")
+pima <- na.omit(PimaIndiansDiabetes2)
+
+fit <- fit_lca(pima,
+               continuous  = c("glucose", "pressure", "mass", "pedigree"),
+               concomitant = ~ age,
+               n_classes   = 2,
+               control     = lca_control(n_starts = 10, seed = 110))
+
+summary(fit, data = pima)
+plot(fit, type = "profiles")
+
+distal(fit, pima, diabetes ~ age, family = "binomial")
+```
+
+## Vignettes
+
+The website hosts three companion vignettes:
+
+- **A workflow for LCA**: naive fit → BVR diagnostics → direct effects →
+  SLD.
+- **Concomitant predictors and distal outcomes**: covariates (character
+  vector and formula),
+  [`predict()`](https://rdrr.io/r/stats/predict.html) semantics, BCH
+  distal estimation.
+- **SLD theory and worked example**: the math (conditional Burt matrix,
+  hollow projector, identification, EM step) plus a synthetic example
+  where SLD outperforms naive LCA.
+
+## Citation
+
+The methodological paper for SLD is in preparation. For now, please cite
+the package:
+
+``` r
+citation("mixLCA")
+```
+
+## Author
+
+Ali Sanaei (`sanaei@uchicago.edu`).
+
+# Package index
+
+## Package overview
+
+- [`mixLCA`](https://asanaei.github.io/mixLCA/reference/mixLCA-package.md)
+  [`mixLCA-package`](https://asanaei.github.io/mixLCA/reference/mixLCA-package.md)
+  : mixLCA: Partitioned Latent Class Analysis
+
+## Fitting
+
+Entry points for fitting latent class models.
+
+- [`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md) :
+  Fit a Latent Class Model with mixLCA
+- [`lca_control()`](https://asanaei.github.io/mixLCA/reference/lca_control.md)
+  : Control Parameters for mixLCA
+- [`enumerate_lca()`](https://asanaei.github.io/mixLCA/reference/enumerate_lca.md)
+  : Enumerate mixLCA Models Across Class Counts
+- [`auto_bvr()`](https://asanaei.github.io/mixLCA/reference/auto_bvr.md)
+  : Automated Model Selection for mixLCA
+- [`auto_sld()`](https://asanaei.github.io/mixLCA/reference/auto_sld.md)
+  : Automated Class-Specific Spectral Rank Selection
+
+## Inference
+
+Post-fit inference and prediction.
+
+- [`predict(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/predict.mixLCA.md)
+  : Predict Method for mixLCA
+- [`distal()`](https://asanaei.github.io/mixLCA/reference/distal.md) :
+  Distal Outcome Estimation via BCH Weighting
+- [`concomitant_se()`](https://asanaei.github.io/mixLCA/reference/concomitant_se.md)
+  : Standard Errors for Concomitant Coefficients
+- [`continuous_se()`](https://asanaei.github.io/mixLCA/reference/continuous_se.md)
+  : Standard Errors for Continuous Parameters (Numerical)
+- [`get_posteriors()`](https://asanaei.github.io/mixLCA/reference/get_posteriors.md)
+  : Extract Posterior Class Probabilities
+- [`get_loadings()`](https://asanaei.github.io/mixLCA/reference/get_loadings.md)
+  : Extract Spectral Loadings
+- [`coef(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/coef.mixLCA.md)
+  : Coef Method for mixLCA
+- [`logLik(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/logLik.mixLCA.md)
+  : logLik Method for mixLCA
+- [`nobs(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/nobs.mixLCA.md)
+  : nobs Method for mixLCA
+- [`AIC(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/AIC.mixLCA.md)
+  : AIC Method for mixLCA
+- [`BIC(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/BIC.mixLCA.md)
+  : BIC Method for mixLCA
+
+## Diagnostics
+
+Fit indices and bivariate residual diagnostics.
+
+- [`fit_indices()`](https://asanaei.github.io/mixLCA/reference/fit_indices.md)
+  : Compute Fit Indices for a mixLCA Model
+- [`bvr()`](https://asanaei.github.io/mixLCA/reference/bvr.md) :
+  Bivariate Residual Covariance Matrix
+- [`bvr_tests()`](https://asanaei.github.io/mixLCA/reference/bvr_tests.md)
+  : Bivariate Residual Significance Tests
+- [`bvr_categorical()`](https://asanaei.github.io/mixLCA/reference/bvr_categorical.md)
+  : Bivariate Residuals for Categorical Indicators
+- [`class_table()`](https://asanaei.github.io/mixLCA/reference/class_table.md)
+  : Classification Table for a mixLCA Model
+- [`compare_models()`](https://asanaei.github.io/mixLCA/reference/compare_models.md)
+  : Compare Multiple mixLCA Models
+- [`spectral_loadings()`](https://asanaei.github.io/mixLCA/reference/spectral_loadings.md)
+  : Spectral Loadings as a Tidy Data Frame
+
+## Visualization
+
+Plot method and visual diagnostics.
+
+- [`plot(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/plot.mixLCA.md)
+  : Plot Method for mixLCA
+
+## Printing
+
+- [`print(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/print.mixLCA.md)
+  : Print a mixLCA Object
+- [`summary(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/summary.mixLCA.md)
+  : Summary Method for mixLCA
+
+# Articles
+
+### All vignettes
+
+- [Concomitant Predictors and Distal
+  Outcomes](https://asanaei.github.io/mixLCA/articles/distal-covariates.md):
+- [Introduction to
+  mixLCA](https://asanaei.github.io/mixLCA/articles/mixLCA.md):
+- [Spectral Local Dependence: Theory and Worked
+  Example](https://asanaei.github.io/mixLCA/articles/sld-theory.md):
+- [A Workflow for Latent Class Analysis: Naive Fit, BVR Adjustments, and
+  Spectral Local
+  Dependence](https://asanaei.github.io/mixLCA/articles/workflow.md):
