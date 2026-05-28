@@ -17,3 +17,15 @@ Data frame of comparative fit statistics.
 Assembles a summary table of fit indices across a list of fitted
 models, ordered by number of classes.
 }
+\examples{
+\donttest{
+data(voter_perceptions)
+cat_items <- names(voter_perceptions)
+fits <- lapply(2:4, function(K)
+  fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
+          control = lca_control(n_starts = 2, seed = 110),
+          verbose = FALSE))
+names(fits) <- paste0("K", 2:4)
+compare_models(fits)
+}
+}

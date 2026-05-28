@@ -24,3 +24,15 @@ diagonal covariance elements via numerical second derivative of the
 observed marginal log-likelihood. This respects Louis's Principle
 by differentiating through the mixture, not the Q-function.
 }
+\examples{
+\donttest{
+data(health_screening)
+fit <- fit_lca(health_screening,
+               continuous = c("marker_1","marker_2","marker_3","marker_4"),
+               n_classes  = 2,
+               control    = lca_control(n_starts = 3, seed = 110),
+               verbose    = FALSE)
+ses <- continuous_se(fit, health_screening)
+round(ses$mean_se[[1]], 4)   # SE of class-1 means
+}
+}

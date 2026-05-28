@@ -20,5 +20,16 @@ Computes the Pearson chi-squared bivariate residual for each pair of
 categorical manifest variables. Under local independence the model-implied
 bivariate frequencies should match the observed ones. Large BVR values
 (rule of thumb > 4) signal local dependence addressable by adding direct
-effects via \code{cat_direct_effects} in \code{\link{lca}}.
+effects via \code{cat_direct_effects} in \code{\link{fit_lca}}.
+}
+\examples{
+\donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 3,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+head(bvr_categorical(fit, voter_perceptions), 5)
+}
 }

@@ -4,25 +4,58 @@
 \alias{predict.mixLCA}
 \title{Predict Method for mixLCA}
 \usage{
-\method{predict}{mixLCA}(object, newdata = NULL, ...)
+\method{predict}{mixLCA}(object, newdata = NULL, type = c("prob", "class", "all"), ...)
 }
 \arguments{
 \item{object}{A \code{mixLCA} object.}
 
 \item{newdata}{Optional data frame for out-of-sample prediction.}
 
+\item{type}{One of \code{"prob"} (default; N x K matrix of posterior
+probabilities), \code{"class"} (integer vector of modal class
+assignments), or \code{"all"} (legacy data frame containing
+\code{P_class_*}, \code{modal_class}, \code{max_posterior},
+and -- for out-of-sample -- \code{log_lik}).}
+
 \item{...}{Unused.}
 }
 \value{
-Data frame with one row per observation, including columns
-  \code{P_class_1}, ..., \code{P_class_K}, \code{modal_class},
-  \code{max_posterior}, and (when \code{newdata} is supplied)
-  \code{log_lik} (per-observation log marginal density).
+A matrix, integer vector, or data frame, per \code{type}.
 }
 \description{
-Returns posterior class probabilities, modal class assignments, and
-the maximum posterior probability (classification certainty) for each
-observation. When \code{newdata} is supplied, posteriors are computed
-from scratch using the estimated model parameters, including Spectral
-Local Dependence shifts if applicable.
+Returns posterior class probabilities, modal class assignments, or
+the full diagnostic dataframe for each observation. When
+\code{newdata} is supplied, posteriors are computed from scratch
+using the estimated model parameters, including Spectral Local
+Dependence shifts if applicable.
+}
+\details{
+Rows of \code{newdata} with missing concomitant values are not
+scored and are returned as \code{NA} so that the output length
+always equals \code{nrow(newdata)} (the standard \code{na.exclude}
+contract). This makes \code{cbind(newdata, predict(model, newdata))}
+safe.
+}
+\examples{
+\donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 3,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+
+# Default: N x K posterior probability matrix
+head(predict(fit))
+
+# Modal class assignments as an integer vector
+head(predict(fit, type = "class"))
+
+# Full diagnostic data frame
+head(predict(fit, type = "all"))
+
+# Out-of-sample prediction; rows with NA in concomitants pad with NA
+new_rows <- voter_perceptions[1:6, ]
+predict(fit, newdata = new_rows, type = "class")
+}
 }

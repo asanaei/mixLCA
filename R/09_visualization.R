@@ -19,6 +19,37 @@
 #'   \code{"spectral_scree"}, or \code{"spectral_loadings"}.
 #' @param ... Forwarded to the underlying plotting routine.
 #' @return A \code{ggplot} object.
+#'
+#' @examples
+#' \donttest{
+#' # Continuous indicators: profile, uncertainty, convergence
+#' data(health_screening)
+#' fit_c <- fit_lca(health_screening,
+#'                  continuous = c("marker_1","marker_2","marker_3","marker_4"),
+#'                  n_classes  = 2,
+#'                  control    = lca_control(n_starts = 2, seed = 110),
+#'                  verbose    = FALSE)
+#' plot(fit_c, type = "profiles")
+#' plot(fit_c, type = "uncertainty")
+#' plot(fit_c, type = "convergence")
+#' plot(fit_c, type = "bvr", data = health_screening)
+#'
+#' # Categorical indicators: response probabilities and SLD loadings
+#' data(voter_perceptions)
+#' fit_k <- fit_lca(voter_perceptions,
+#'                  categorical   = names(voter_perceptions)[1:6],
+#'                  n_classes     = 2,
+#'                  spectral_rank = c(1L, 1L),
+#'                  control       = lca_control(n_starts = 2, seed = 110),
+#'                  verbose       = FALSE)
+#' plot(fit_k, type = "categorical")
+#' plot(fit_k, type = "spectral_scree")
+#' plot(fit_k, type = "spectral_loadings", dimension = 1, class = 1)
+#'
+#' # Distal density by class
+#' plot(fit_c, type = "distal", data = health_screening,
+#'      variable = "marker_1")
+#' }
 #' @export
 plot.mixLCA <- function(x, type = c("profiles", "bvr", "distal",
                                     "uncertainty", "convergence",

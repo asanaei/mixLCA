@@ -19,3 +19,14 @@ Data frame with columns: \code{var1}, \code{var2},
 Converts residual covariances to approximate chi-squared statistics
 (df = 1) for pairwise local dependence testing.
 }
+\examples{
+\donttest{
+data(health_screening)
+fit <- fit_lca(health_screening,
+               continuous = c("marker_1","marker_2","marker_3","marker_4"),
+               n_classes  = 2,
+               control    = lca_control(n_starts = 2, seed = 110),
+               verbose    = FALSE)
+bvr_tests(fit, health_screening)
+}
+}

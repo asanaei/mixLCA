@@ -13,6 +13,19 @@
 #' @param data Data frame used for estimation.
 #' @return A P x (K-1) matrix of standard errors, or NULL if no
 #'   concomitant predictors were specified.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+#'                concomitant = ~ age,
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 3, seed = 110),
+#'                verbose     = FALSE)
+#' se <- concomitant_se(fit, health_screening)
+#' round(cbind(Estimate = fit$concomitant_coefs[, 1], SE = se[, 1]), 4)
+#' }
 #' @export
 concomitant_se <- function(model, data) {
   if (!inherits(model, "mixLCA"))
@@ -78,6 +91,18 @@ concomitant_se <- function(model, data) {
 #' @return A list with elements \code{mean_se} (list of K named
 #'   vectors) and \code{cov_se} (list of K d x d matrices), or NULL
 #'   if no continuous indicators were specified.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous = c("marker_1","marker_2","marker_3","marker_4"),
+#'                n_classes  = 2,
+#'                control    = lca_control(n_starts = 3, seed = 110),
+#'                verbose    = FALSE)
+#' ses <- continuous_se(fit, health_screening)
+#' round(ses$mean_se[[1]], 4)   # SE of class-1 means
+#' }
 #' @export
 continuous_se <- function(model, data, step = 1e-4) {
   if (!inherits(model, "mixLCA"))

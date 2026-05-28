@@ -12,6 +12,20 @@
 #' @param x A fitted \code{mixLCA} object.
 #' @param ... Unused.
 #' @return Numeric matrix.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' post <- get_posteriors(fit)
+#' dim(post)
+#' head(round(post, 3))
+#' colSums(post) / nrow(post)   # estimated class proportions
+#' }
 #' @export
 get_posteriors <- function(x, ...) UseMethod("get_posteriors")
 
@@ -29,6 +43,19 @@ get_posteriors.mixLCA <- function(x, ...) x$posteriors
 #' @param x A fitted \code{mixLCA} object.
 #' @param ... Unused.
 #' @return A data frame or NULL.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical   = names(voter_perceptions),
+#'                n_classes     = 2,
+#'                spectral_rank = c(1L, 1L),
+#'                control       = lca_control(n_starts = 2, seed = 110),
+#'                verbose       = FALSE)
+#' ld <- get_loadings(fit)
+#' head(ld, 12)
+#' }
 #' @export
 get_loadings <- function(x, ...) UseMethod("get_loadings")
 
@@ -42,6 +69,17 @@ get_loadings.mixLCA <- function(x, ...) {
 #'
 #' @param x A \code{mixLCA} object.
 #' @param ... Unused.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' print(fit)
+#' }
 #' @export
 print.mixLCA <- function(x, ...) {
   cat("\nLatent Class Model - mixLCA\n")
@@ -92,6 +130,18 @@ print.mixLCA <- function(x, ...) {
 #' @param data Optional data frame: required for concomitant standard
 #'   errors.
 #' @param ... Unused.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+#'                concomitant = ~ age,
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 3, seed = 110),
+#'                verbose     = FALSE)
+#' summary(fit, data = health_screening)
+#' }
 #' @export
 summary.mixLCA <- function(object, data = NULL, ...) {
   fi <- fit_indices(object)
@@ -261,6 +311,29 @@ summary.mixLCA <- function(object, data = NULL, ...) {
 #'   and -- for out-of-sample -- \code{log_lik}).
 #' @param ... Unused.
 #' @return A matrix, integer vector, or data frame, per \code{type}.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 3,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#'
+#' # Default: N x K posterior probability matrix
+#' head(predict(fit))
+#'
+#' # Modal class assignments as an integer vector
+#' head(predict(fit, type = "class"))
+#'
+#' # Full diagnostic data frame
+#' head(predict(fit, type = "all"))
+#'
+#' # Out-of-sample prediction; rows with NA in concomitants pad with NA
+#' new_rows <- voter_perceptions[1:6, ]
+#' predict(fit, newdata = new_rows, type = "class")
+#' }
 #' @export
 predict.mixLCA <- function(object, newdata = NULL,
                            type = c("prob", "class", "all"), ...) {
@@ -403,6 +476,21 @@ predict.mixLCA <- function(object, newdata = NULL,
 #' @param object A \code{mixLCA} object.
 #' @param ... Unused.
 #' @return Named list.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+#'                concomitant = ~ age,
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' cc <- coef(fit)
+#' names(cc)
+#' cc$concomitant
+#' cc$means
+#' }
 #' @export
 coef.mixLCA <- function(object, ...) {
   parts <- list()
@@ -429,6 +517,17 @@ coef.mixLCA <- function(object, ...) {
 #' @param object A \code{mixLCA} object.
 #' @param ... Unused.
 #' @return Object of class \code{logLik}.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' logLik(fit)
+#' }
 #' @export
 logLik.mixLCA <- function(object, ...) {
   ll            <- object$log_lik
@@ -445,6 +544,17 @@ logLik.mixLCA <- function(object, ...) {
 #' @param object A \code{mixLCA} object.
 #' @param ... Unused.
 #' @return Integer.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' nobs(fit)
+#' }
 #' @export
 nobs.mixLCA <- function(object, ...) {
   if (!is.null(object$n_obs_effective) && !is.na(object$n_obs_effective))
@@ -457,6 +567,19 @@ nobs.mixLCA <- function(object, ...) {
 #' @param ... Unused.
 #' @param k Numeric penalty per parameter (default 2).
 #' @return Numeric AIC value.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' AIC(fit)
+#' # BIC-like penalty (k = log(N))
+#' AIC(fit, k = log(nobs(fit)))
+#' }
 #' @export
 AIC.mixLCA <- function(object, ..., k = 2) {
   if (!is.null(object$AIC) && k == 2) return(object$AIC)
@@ -468,6 +591,17 @@ AIC.mixLCA <- function(object, ..., k = 2) {
 #' @param object A \code{mixLCA} object.
 #' @param ... Unused.
 #' @return Numeric BIC value.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' BIC(fit)
+#' }
 #' @export
 BIC.mixLCA <- function(object, ...) {
   if (!is.null(object$BIC)) return(object$BIC)

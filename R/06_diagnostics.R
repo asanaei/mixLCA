@@ -11,6 +11,18 @@
 #'
 #' @param model A \code{mixLCA} object.
 #' @return Named list of fit statistics.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 3,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' fi <- fit_indices(fit)
+#' fi[c("log_lik", "n_params", "AIC", "BIC", "aBIC", "entropy", "ICL")]
+#' }
 #' @export
 fit_indices <- function(model) {
   if (!inherits(model, "mixLCA"))
@@ -66,6 +78,17 @@ fit_indices <- function(model) {
 #' @param data Data frame used for estimation.
 #' @return Named matrix of residual covariances among continuous
 #'   indicators.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous = c("marker_1","marker_2","marker_3","marker_4"),
+#'                n_classes  = 2,
+#'                control    = lca_control(n_starts = 2, seed = 110),
+#'                verbose    = FALSE)
+#' round(bvr(fit, health_screening), 3)
+#' }
 #' @export
 bvr <- function(model, data) {
   if (!inherits(model, "mixLCA"))
@@ -108,6 +131,17 @@ bvr <- function(model, data) {
 #' @param data Data frame used for estimation.
 #' @return Data frame with columns: \code{var1}, \code{var2},
 #'   \code{residual_cov}, \code{chi_sq}, \code{p_value}.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous = c("marker_1","marker_2","marker_3","marker_4"),
+#'                n_classes  = 2,
+#'                control    = lca_control(n_starts = 2, seed = 110),
+#'                verbose    = FALSE)
+#' bvr_tests(fit, health_screening)
+#' }
 #' @export
 bvr_tests <- function(model, data) {
   bvr_mat  <- bvr(model, data)
@@ -149,6 +183,17 @@ bvr_tests <- function(model, data) {
 #' @param model A \code{mixLCA} object.
 #' @return K x K matrix: rows = modal assignment, columns = average
 #'   P(class k).
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 3,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' round(class_table(fit), 3)
+#' }
 #' @export
 class_table <- function(model) {
   if (!inherits(model, "mixLCA"))
@@ -178,6 +223,18 @@ class_table <- function(model) {
 #' @param ... One or more \code{mixLCA} objects, or a single named list
 #'   of them.
 #' @return Data frame of comparative fit statistics.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' cat_items <- names(voter_perceptions)
+#' fits <- lapply(2:4, function(K)
+#'   fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
+#'           control = lca_control(n_starts = 2, seed = 110),
+#'           verbose = FALSE))
+#' names(fits) <- paste0("K", 2:4)
+#' compare_models(fits)
+#' }
 #' @export
 compare_models <- function(...) {
   models <- list(...)

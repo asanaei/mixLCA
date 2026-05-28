@@ -16,3 +16,15 @@ Named list of fit statistics.
 Returns AIC, BIC, sample-adjusted BIC, relative entropy, and the
 Integrated Classification Likelihood criterion (ICL).
 }
+\examples{
+\donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 3,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+fi <- fit_indices(fit)
+fi[c("log_lik", "n_params", "AIC", "BIC", "aBIC", "entropy", "ICL")]
+}
+}

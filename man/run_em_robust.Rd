@@ -17,7 +17,6 @@ run_em_robust(
   n_starts = 1L,
   base_seed = 110L,
   verbose = TRUE,
-  n_cores = 1L,
   cat_direct_effects = NULL,
   spectral_rank = 0L,
   spectral_pool = FALSE,
@@ -32,7 +31,7 @@ run_em_robust(
 
 \item{categorical}{Character vector or NULL.}
 
-\item{concomitant}{Character vector or NULL.}
+\item{concomitant}{Character vector or formula or NULL.}
 
 \item{n_classes}{Integer >= 2.}
 
@@ -50,8 +49,6 @@ run_em_robust(
 
 \item{verbose}{Logical: print per-start progress?}
 
-\item{n_cores}{Integer: number of cores for parallel execution.}
-
 \item{cat_direct_effects}{List of direct effect pairs, or NULL.}
 
 \item{spectral_rank}{Integer: SLD rank (0 = disabled).}
@@ -60,6 +57,8 @@ run_em_robust(
 
 \item{init_model}{Optional prior \code{mixLCA} object for warm-start
 (used for the first start only).}
+
+\item{kmeans_nstart}{Integer: random starts for internal k-means.}
 }
 \value{
 The best-fitting \code{mixLCA} object.
@@ -67,6 +66,8 @@ The best-fitting \code{mixLCA} object.
 \description{
 Runs the EM algorithm from multiple random starting points (each
 seeded deterministically from \code{base_seed + s}) and returns the
-solution with the highest terminal log-likelihood.
+solution with the highest terminal log-likelihood. Parallel execution
+is delegated to the user's active \code{future::plan()}; this function
+never alters the global plan or the global random seed.
 }
 \keyword{internal}

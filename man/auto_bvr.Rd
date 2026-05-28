@@ -13,7 +13,6 @@ auto_bvr(
   max_direct_effects = 5L,
   bvr_threshold = 3.84,
   seed = 110L,
-  n_cores = 4L,
   verbose = TRUE,
   ...
 )
@@ -25,7 +24,8 @@ auto_bvr(
 
 \item{categorical}{Character vector of categorical indicator names, or NULL.}
 
-\item{concomitant}{Character vector of concomitant predictor names, or NULL.}
+\item{concomitant}{Character vector or formula of concomitant predictors,
+or NULL.}
 
 \item{K_range}{Integer vector of class counts to evaluate (e.g., 2:5).}
 
@@ -37,11 +37,10 @@ consider a direct effect (default 3.84, i.e. p < .05 for df = 1).}
 
 \item{seed}{Random seed.}
 
-\item{n_cores}{Integer. Number of parallel processes to use. Default is 4.}
-
 \item{verbose}{Logical: print progress?}
 
-\item{...}{Additional arguments passed to \code{lca}.}
+\item{...}{Additional arguments passed to \code{fit_lca} (e.g.,
+\code{spectral_rank}, \code{spectral_pool}).}
 }
 \value{
 An object of class \code{mixLCA} representing the final selected
@@ -59,5 +58,24 @@ Three-phase automated model selection:
     categorical indicators: iteratively add direct effects for the
     pair with the largest bivariate residual, stopping when BIC no
     longer improves or \code{max_direct_effects} is reached.}
+}
+}
+\details{
+Parallel execution of multiple starts is delegated to the user's active
+\code{future::plan()} (set it in the session before calling this function).
+}
+\examples{
+\dontrun{
+data(voter_perceptions)
+fit <- auto_bvr(
+  data        = voter_perceptions,
+  categorical = names(voter_perceptions),
+  K_range     = 3,
+  max_direct_effects = 4L,
+  seed        = 110L,
+  n_starts    = 3,
+  verbose     = FALSE)
+fit$auto_path$direct_effects
+fit_indices(fit)$BIC
 }
 }

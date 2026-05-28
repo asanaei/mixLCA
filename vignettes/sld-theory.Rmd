@@ -234,10 +234,11 @@ A few points worth flagging.
 
 # Worked example: when SLD wins
 
-The election dataset used in `vignette("workflow")` is dominated by
-*pairwise* dependence, so direct effects win there. SLD wins when the
-local dependence is broad. Here is a small synthetic example that
-illustrates.
+In `vignette("workflow")` we see that on the `voter_perceptions`
+dataset SLD beats both naive LCA and BVR-guided direct effects, even
+though the bivariate residuals are individually large. That is the
+typical case when local dependence is broad. Below is a smaller
+synthetic example that makes the comparison even sharper.
 
 We generate $N = 500$ observations from two classes, each with 8
 binary items. In class 1, items 1-4 are positively correlated via a

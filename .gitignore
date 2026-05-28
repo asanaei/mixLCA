@@ -58,3 +58,4 @@ _debug*.R
 _rename*.R
 _check*.R
 _clean*.R
+Rplots.pdf

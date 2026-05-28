@@ -78,6 +78,27 @@ bch_weights <- function(posteriors) {
 #'   \code{"poisson"}.
 #' @return An object of class \code{mixDistal} containing class-specific
 #'   model summaries.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+#'                concomitant = ~ age,
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 3, seed = 110),
+#'                verbose     = FALSE)
+#'
+#' # Binary distal outcome under BCH weighting
+#' d_bin <- distal(fit, health_screening,
+#'                 outcome ~ age, family = "binomial")
+#' print(d_bin)
+#'
+#' # Continuous distal outcome (uses marker_4 as a stand-in)
+#' d_gauss <- distal(fit, health_screening,
+#'                   marker_4 ~ age, family = "gaussian")
+#' print(d_gauss)
+#' }
 #' @export
 distal <- function(model, data, formula, family = "gaussian") {
   if (!inherits(model, "mixLCA"))
@@ -266,6 +287,28 @@ distal <- function(model, data, formula, family = "gaussian") {
   out
 }
 
+#' Print a mixDistal Object
+#'
+#' Prints the per-class regression coefficients, sandwich standard
+#' errors, and classification error matrix produced by
+#' \code{\link{distal}}.
+#'
+#' @param x A \code{mixDistal} object.
+#' @param ... Unused.
+#' @return Invisibly returns \code{x}.
+#'
+#' @examples
+#' \donttest{
+#' data(health_screening)
+#' fit <- fit_lca(health_screening,
+#'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+#'                concomitant = ~ age,
+#'                n_classes   = 2,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' d <- distal(fit, health_screening, outcome ~ age, family = "binomial")
+#' print(d)
+#' }
 #' @export
 print.mixDistal <- function(x, ...) {
   cat("\nDistal Outcome Estimation (BCH Method) - mixLCA\n")

@@ -37,6 +37,21 @@
 #' @return An object of class \code{mixLCA} representing the final selected
 #'   model, with an additional \code{auto_path} element recording the
 #'   search trajectory.
+#'
+#' @examples
+#' \dontrun{
+#' data(voter_perceptions)
+#' fit <- auto_bvr(
+#'   data        = voter_perceptions,
+#'   categorical = names(voter_perceptions),
+#'   K_range     = 3,
+#'   max_direct_effects = 4L,
+#'   seed        = 110L,
+#'   n_starts    = 3,
+#'   verbose     = FALSE)
+#' fit$auto_path$direct_effects
+#' fit_indices(fit)$BIC
+#' }
 #' @export
 auto_bvr <- function(data, continuous = NULL, categorical = NULL,
                      concomitant = NULL, K_range = 2:5,

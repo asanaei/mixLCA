@@ -89,6 +89,22 @@ get_unmodeled_eigenvalues <- function(model, data, ranks, max_rank_per_class) {
 #'   an additional element \code{auto_spectral_path} documenting the
 #'   search history (data frame with columns \code{step},
 #'   \code{class_incremented}, \code{ranks}, and the criterion value).
+#'
+#' @examples
+#' \dontrun{
+#' data(voter_perceptions)
+#' fit <- auto_sld(
+#'   data        = voter_perceptions,
+#'   categorical = names(voter_perceptions),
+#'   n_classes   = 3,
+#'   max_rank_per_class = 3L,
+#'   criterion   = "BIC",
+#'   seed        = 110L,
+#'   verbose     = FALSE)
+#' fit$specs$spectral_rank      # class-specific ranks selected
+#' fit$auto_spectral_path        # accepted increments
+#' fit_indices(fit)$BIC
+#' }
 #' @export
 auto_sld <- function(data, continuous = NULL, categorical = NULL,
                      concomitant = NULL, n_classes = 2L,

@@ -26,6 +26,11 @@ reference:
   - title: Package overview
     contents:
       - mixLCA-package
+  - title: Datasets
+    desc: Embedded synthetic datasets used by the vignettes and examples.
+    contents:
+      - voter_perceptions
+      - health_screening
   - title: Fitting
     desc: Entry points for fitting latent class models.
     contents:
@@ -66,6 +71,7 @@ reference:
     contents:
       - print.mixLCA
       - summary.mixLCA
+      - print.mixDistal
 
 development:
   mode: auto

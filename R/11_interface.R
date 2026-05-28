@@ -20,6 +20,14 @@
 #'   Irrelevant for categorical-only models or when \code{init_model}
 #'   is supplied.
 #' @return A list of control values.
+#'
+#' @examples
+#' # Default control parameters
+#' lca_control()
+#'
+#' # Tighter tolerance, more random starts, deterministic seed
+#' lca_control(max_iter = 1000L, tol = 1e-8,
+#'             n_starts = 10L, seed = 110L)
 #' @export
 lca_control <- function(max_iter = 500L, tol = 1e-6,
                         n_starts = 1L, seed = 110L,
@@ -104,36 +112,25 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #'   \code{\link{bvr_tests}}, \code{\link{enumerate_lca}}.
 #'
 #' @examples
-#' \dontrun{
-#' withr::with_seed(110, {
-#'   N  <- 600
-#'   cl <- sample(1:2, N, replace = TRUE)
-#'   df <- data.frame(
-#'     x1  = ifelse(cl == 1, rnorm(N, 10, 2), rnorm(N, 5, 2)),
-#'     x2  = ifelse(cl == 1, rnorm(N, 10, 2), rnorm(N, 5, 2)),
-#'     x3  = ifelse(cl == 1, rnorm(N,  3, 1), rnorm(N, 8, 1)),
-#'     age = rnorm(N, 40, 10),
-#'     outcome = ifelse(cl == 1, rnorm(N, 80, 10), rnorm(N, 40, 10))
-#'   )
-#' })
+#' \donttest{
+#' # Categorical example: fit a two-class model to voter perceptions.
+#' data(voter_perceptions)
+#' fit_cat <- fit_lca(voter_perceptions,
+#'                    categorical = names(voter_perceptions),
+#'                    n_classes   = 2,
+#'                    control     = lca_control(n_starts = 3, seed = 110),
+#'                    verbose     = FALSE)
+#' fit_cat
 #'
-#' fit <- fit_lca(
-#'   data        = df,
-#'   continuous  = c("x1", "x2", "x3"),
-#'   concomitant = ~ age,
-#'   n_classes   = 2,
-#'   dependence  = "full",
-#'   control     = lca_control(n_starts = 5)
-#' )
-#'
-#' summary(fit, data = df)
-#' fit_indices(fit)
-#' bvr_tests(fit, df)
-#' plot(fit, type = "profiles")
-#' plot(fit, type = "bvr", data = df)
-#'
-#' dis <- distal(fit, df, outcome ~ age, family = "gaussian")
-#' print(dis)
+#' # Mixed example: continuous markers with an age covariate.
+#' data(health_screening)
+#' fit_mix <- fit_lca(health_screening,
+#'                    continuous  = c("marker_1", "marker_2", "marker_3", "marker_4"),
+#'                    concomitant = ~ age,
+#'                    n_classes   = 2,
+#'                    control     = lca_control(n_starts = 5, seed = 110),
+#'                    verbose     = FALSE)
+#' summary(fit_mix, data = health_screening)
 #' }
 #'
 #' @export

@@ -189,6 +189,19 @@ eval_spectral_density_oos <- function(newdata_encoded, encoding, pi_c, A_star) {
 #' Spectral Loadings as a Tidy Data Frame
 #' @param model A \code{mixLCA} object.
 #' @return Data frame.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical   = names(voter_perceptions),
+#'                n_classes     = 2,
+#'                spectral_rank = c(1L, 1L),
+#'                control       = lca_control(n_starts = 2, seed = 110),
+#'                verbose       = FALSE)
+#' ld <- spectral_loadings(fit)
+#' head(ld, 12)
+#' }
 #' @export
 spectral_loadings <- function(model) {
   if (is.null(model$cat_spectral_params)) stop("`model` does not contain spectral local dependence parameters.")

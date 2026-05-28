@@ -74,66 +74,56 @@ dataset:
    correlated structure across *many* items at once (see the companion
    vignette `vignette("sld-theory")` for the math).
 
-We use `poLCA::election`, a study of how respondents rated the moral
-character, competence, and dishonesty of George W. Bush (`G` items) and
-Al Gore (`B` items) in 2000. The items come in conceptually parallel
-pairs (`MORALG`/`MORALB`, `KNOWG`/`KNOWB`, and so on), so we have an
-*a priori* reason to expect local dependence: ratings of the same
-candidate cluster together, and parallel items about the two candidates
-may also covary through partisan affect.
+We use the package's embedded dataset `voter_perceptions`, a 2000-
+respondent synthetic survey rating two hypothetical candidates ("A"
+and "B") on six attributes each (moral character, competence,
+leadership, honesty, intelligence, empathy). Items come in conceptually
+parallel pairs (`moral_A`/`moral_B`, and so on), so we have an *a
+priori* reason to expect local dependence: ratings of the same
+candidate cluster together via a shared partisan affect.
 
 # Setup
 
 ```{r data}
-data("election", package = "poLCA")
-cat_items <- c("MORALG", "CARESG", "KNOWG",  "LEADG",  "DISHONG", "INTELG",
-               "MORALB", "CARESB", "KNOWB",  "LEADB",  "DISHONB", "INTELB")
-
-# `fit_lca` requires a complete-case rectangle in the indicators (it
-# tolerates NAs in the categorical likelihood, but auto_bvr's
-# bookkeeping is cleaner without them).
-keep <- stats::complete.cases(election[, cat_items])
-elec <- election[keep, ]
-dim(elec)
+data(voter_perceptions)
+cat_items <- names(voter_perceptions)
+length(cat_items)   # 12 items
+nrow(voter_perceptions)
 ```
 
 ```{r data-load-precomputed, eval = !RUN_LIVE, include = FALSE}
-data("election", package = "poLCA")
-cat_items <- c("MORALG", "CARESG", "KNOWG",  "LEADG",  "DISHONG", "INTELG",
-               "MORALB", "CARESB", "KNOWB",  "LEADB",  "DISHONB", "INTELB")
-keep <- stats::complete.cases(election[, cat_items])
-elec <- election[keep, ]
+data(voter_perceptions)
+cat_items <- names(voter_perceptions)
 ```
 
-Each item is rated on a four-point scale. The respondent count after
-listwise deletion is about `r format(sum(keep), big.mark = ",")`.
+Each item is rated on a four-level ordinal scale (`poor`, `fair`,
+`good`, `excellent`).
 
 # 1. The naive fit: ignore local dependence
 
-We fit two-, three-, and four-class models with `dependence = "full"`
-on the (nonexistent) continuous side and *implicit* local independence
-on the categorical side.
+We fit two-, three-, and four-class models with local independence on
+the categorical side.
 
 ```{r naive-fit}
-elec_fits <- lapply(2:4, function(K) {
-  fit_lca(elec, categorical = cat_items, n_classes = K,
+voter_fits <- lapply(2:4, function(K) {
+  fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
           control = lca_control(n_starts = 5, seed = 110),
           verbose = FALSE)
 })
-names(elec_fits) <- paste0("K", 2:4)
+names(voter_fits) <- paste0("K", 2:4)
 ```
 
 ```{r naive-fit-load, eval = !RUN_LIVE, include = FALSE}
-elec_fits <- load_fit("election_naive_fits.rds")
+voter_fits <- load_fit("voter_naive_fits.rds")
 ```
 
 ```{r naive-compare, eval = TRUE}
-compare_models(elec_fits)
+compare_models(voter_fits)
 ```
 
-The standard reading: BIC keeps dropping as we add classes, suggesting
-$K \ge 4$. Entropy is in the comfortable range. Most analysts would
-declare success here.
+The standard reading: BIC drops as we add classes, with $K = 4$
+narrowly best. Entropy is in the comfortable range. Most analysts
+would declare success around $K = 3$ or $K = 4$.
 
 That conclusion is fragile.
 
@@ -145,20 +135,17 @@ model predicts under local independence. Values above 3.84 indicate
 significant local dependence ($p < .05$, $\mathrm{df} = 1$).
 
 ```{r bvr-table, eval = TRUE}
-fit_K3 <- elec_fits$K3
-bvr_K3 <- bvr_categorical(fit_K3, elec)
+fit_K3 <- voter_fits$K3
+bvr_K3 <- bvr_categorical(fit_K3, voter_perceptions)
 head(bvr_K3, 8)
 ```
 
 Several pairs sit far above the threshold, and the structure is not
-random. The largest residuals fall along the candidate diagonal
-(`G`-items pair with `G`-items, `B`-items pair with `B`-items). The
-model is forcing parallel ratings of the same candidate to look
-conditionally independent when they manifestly are not.
-
-We can also visualise the residual network on the continuous side via
-`plot(model, type = "bvr")`; the same diagnostic logic applies to
-categorical pairs once you tabulate them.
+random. Most of the largest residuals fall along the candidate
+diagonal (`_A` items pair with other `_A` items, `_B` items pair with
+other `_B` items). The model is forcing parallel ratings of the same
+candidate to look conditionally independent when they manifestly are
+not.
 
 # 3. BVR-guided specification search
 
@@ -168,38 +155,40 @@ direct effect, refits, and stops when BIC ceases to improve (or a cap
 is hit).
 
 ```{r bvr-auto}
-elec_bvr <- auto_bvr(
-  data = elec, categorical = cat_items,
+voter_bvr <- auto_bvr(
+  data = voter_perceptions, categorical = cat_items,
   K_range = 3,                 # fix K so the comparison stays clean
   max_direct_effects = 4L,
   bvr_threshold = 3.84,
   seed = 110, verbose = FALSE,
   n_starts = 5)
-
-elec_bvr$auto_path$direct_effects
 ```
 
 ```{r bvr-auto-load, eval = !RUN_LIVE, include = FALSE}
-elec_bvr <- load_fit("election_bvr_fit.rds")
+voter_bvr <- load_fit("voter_bvr_fit.rds")
 ```
-
-The search added three direct effects:
 
 ```{r bvr-effects-list, eval = TRUE}
-elec_bvr$auto_path$direct_effects
+voter_bvr$auto_path$direct_effects
 ```
 
-All three involve the `KNOW` items, which is interpretable: judgements
-about how much a candidate "knows" cluster with judgements about
-competence (`INTELG`, `LEADB`) on the *same* candidate. The BVR
-machinery surfaced what was already visible in the residual table.
+The search added **zero direct effects**. The top candidate
+(`honest_B → empath_B`, BVR ~ 39) was tested first; adding it raised
+BIC rather than lowering it, so `auto_bvr` rejected it and stopped.
+
+That is informative on its own. The bivariate residuals are
+substantively large, but the *cost* of fitting a full conditional
+probability table for each pair exceeds the *gain* in fit. The
+underlying dependence is broad rather than concentrated in a few
+isolated pairs, so pairwise direct effects are not a parameter-
+efficient response.
 
 ```{r bvr-compare, eval = TRUE}
 fi_naive <- fit_indices(fit_K3)
-fi_bvr   <- fit_indices(elec_bvr)
+fi_bvr   <- fit_indices(voter_bvr)
 
 data.frame(
-  Model      = c("Naive K=3", "BVR-adjusted K=3"),
+  Model      = c("Naive K=3", "auto_bvr K=3"),
   log_lik    = round(c(fi_naive$log_lik, fi_bvr$log_lik), 2),
   n_params   = c(fi_naive$n_params,     fi_bvr$n_params),
   BIC        = round(c(fi_naive$BIC,    fi_bvr$BIC), 2),
@@ -207,151 +196,131 @@ data.frame(
 )
 ```
 
-BIC drops sharply (~ 33 points per direct effect on this dataset, far
-in excess of the BIC penalty for the extra parameters). The
-specification is straightforwardly better, and it does so without
-inflating $K$.
+Identical numbers because `auto_bvr` returned the naive K=3 model
+unchanged. On this dataset, pairwise remediation does not help.
 
 # 4. Spectral Local Dependence (SLD)
 
-Direct effects work pair by pair. When the dependence is
-*low-dimensional* (for example, an underlying latent direction such
-as partisanship that pulls many ratings of the same candidate
-together), SLD captures the same structure in a single rank-$d$
-projection instead of $d \cdot K$ separate pairwise terms.
-
-`auto_sld()` runs a greedy forward search over class-specific ranks,
-adding one rank to the class with the largest unmodelled eigenvalue,
-accepting only if BIC improves.
+When pairwise dependence is broad, the right tool is a *low-rank*
+shift to the class-conditional log response surface rather than a
+sequence of pairwise terms. `auto_sld()` runs a greedy forward search
+over class-specific ranks, adding one rank to the class with the
+largest unmodelled eigenvalue, accepting only if BIC improves.
 
 ```{r sld-auto}
-elec_sld <- auto_sld(
-  data = elec, categorical = cat_items,
+voter_sld <- auto_sld(
+  data = voter_perceptions, categorical = cat_items,
   n_classes = 3,
   max_rank_per_class = 3L,
   criterion = "BIC",
   seed = 110, verbose = FALSE)
-elec_sld$specs$spectral_rank
 ```
 
 ```{r sld-load, eval = !RUN_LIVE, include = FALSE}
-elec_sld <- load_fit("election_sld_fit.rds")
+voter_sld <- load_fit("voter_sld_fit.rds")
 ```
 
 ```{r sld-ranks, eval = TRUE}
-elec_sld$specs$spectral_rank
-round(fit_indices(elec_sld)$BIC, 2)
+voter_sld$specs$spectral_rank
+round(fit_indices(voter_sld)$BIC, 2)
 ```
 
-`auto_sld` settles at ranks `[1, 0, 2]`: class 2 (the
-moderate/ambivalent class) gets no spectral structure, while
-the two more polarized classes each pick up at least one
-low-rank latent direction. The BIC drops from ~34219 (naive K=3) to
-~33763, a real gain, though smaller than the BVR-adjusted fit
-(~33286).
+`auto_sld` settles at ranks `[1, 0, 0]`: a single low-rank direction
+captures the dominant residual structure in the largest class, while
+the smaller classes need no spectral correction. The BIC drops from
+~61256 (naive K=3) to ~60997, a savings of ~260 points.
 
-This comparison is informative on its own:
+# 5. Three-way comparison
 
 ```{r three-way-compare, eval = TRUE}
-fi_naive <- fit_indices(fit_K3)
-fi_bvr   <- fit_indices(elec_bvr)
-fi_sld   <- fit_indices(elec_sld)
+fi_naive4 <- fit_indices(voter_fits$K4)
+fi_sld    <- fit_indices(voter_sld)
 
 data.frame(
-  Model    = c("Naive K=3", "BVR (3 direct effects)", "SLD (ranks 1,0,2)"),
-  n_params = c(fi_naive$n_params, fi_bvr$n_params, fi_sld$n_params),
-  BIC      = round(c(fi_naive$BIC, fi_bvr$BIC, fi_sld$BIC), 2),
-  entropy  = round(c(fi_naive$entropy, fi_bvr$entropy, fi_sld$entropy), 3)
+  Model    = c("Naive K=3", "Naive K=4", "auto_bvr K=3",
+               "SLD K=3 (ranks 1,0,0)"),
+  n_params = c(fi_naive$n_params, fi_naive4$n_params,
+               fi_bvr$n_params,   fi_sld$n_params),
+  BIC      = round(c(fi_naive$BIC, fi_naive4$BIC,
+                     fi_bvr$BIC, fi_sld$BIC), 2),
+  entropy  = round(c(fi_naive$entropy, fi_naive4$entropy,
+                     fi_bvr$entropy, fi_sld$entropy), 3)
 )
 ```
 
-On this dataset, **pairwise direct effects win**. The election items
-divide cleanly into G-pairs and B-pairs, so the local dependence
-shows up as a small number of large pairwise residuals, exactly
-what direct effects were designed to absorb. SLD captures the same
-structure but spends parameters on every item-pair coupling that
-the latent direction implies, even pairs that the data does not
-flag as dependent.
+Reading the table: the naive K=4 model and the SLD K=3 model are
+roughly tied on BIC. The naive K=4 fit absorbs the residual
+covariance by adding an extra class whose only purpose is to soak up
+shared variance; the SLD K=3 fit captures the same structure in a
+single low-rank direction without inflating the class count. The SLD
+solution is more interpretable because the three classes retain their
+substantive meaning (favours A, favours B, moderate), and the
+residual covariance is explicitly modelled rather than hidden inside
+an extra class.
 
-**SLD shines elsewhere**: when residual covariance is *broadly*
-distributed across many items (say, a partisanship dimension that
-shifts every rating slightly), the rank-$d$ projection beats $\binom{J}{2}$
-candidate direct-effect terms. See `vignette("sld-theory")` for the
-math and a worked example.
+You can inspect the loadings to read off which items contribute to
+each latent direction:
 
-You can also inspect the SLD loadings to read off which items
-contribute to each latent direction:
-
-```{r sld-loadings, eval = TRUE, fig.cap = "SLD loadings: rank 1 in class 3.", out.width = "85%"}
-plot(elec_sld, type = "spectral_loadings", dimension = 1, class = 3)
+```{r sld-loadings, eval = TRUE, fig.cap = "SLD loadings: rank 1 in the largest class.", out.width = "85%"}
+plot(voter_sld, type = "spectral_loadings", dimension = 1, class = 1)
 ```
 
-# 5. Substantive comparison: who are the classes?
+# 6. Substantive comparison: who are the classes?
 
 ```{r class-props, eval = TRUE}
 props_naive <- round(colMeans(get_posteriors(fit_K3)), 3)
-props_bvr   <- round(colMeans(get_posteriors(elec_bvr)), 3)
-data.frame(class = 1:3, naive = props_naive, bvr_adjusted = props_bvr)
+props_sld   <- round(colMeans(get_posteriors(voter_sld)), 3)
+data.frame(class = 1:3, naive = props_naive, sld = props_sld)
 ```
 
-The class proportions move only slightly. The substantive class meaning
-changes more visibly in the response profiles:
+The class proportions move only slightly between the naive K=3 fit
+and the SLD-augmented fit. The substantive class meaning is preserved
+across the two specifications:
 
-```{r class-profile-naive, eval = TRUE, fig.cap = "Naive K=3: P(rating = 'Extremely well' | class) for the six G-items.", out.width = "85%"}
-# Build a small profile plot manually from the categorical params.
-# This keeps the vignette dependency-light and shows readers exactly
-# how to extract any quantity from a fitted mixLCA object.
-extract_extremely_well <- function(fit, items) {
+```{r class-profile-naive, eval = TRUE, fig.cap = "Naive K=3: P(rating = 'excellent') for the six A-items.", out.width = "85%"}
+extract_excellent <- function(fit, items) {
   K <- fit$n_classes
   cp <- fit$categorical_params
-  out <- matrix(NA_real_, K, length(items), dimnames = list(paste("Class", 1:K), items))
+  out <- matrix(NA_real_, K, length(items),
+                dimnames = list(paste("Class", 1:K), items))
   for (k in 1:K) {
     for (it in items) {
       probs <- cp[[k]][[it]]
-      hit   <- grep("Extremely well", names(probs), ignore.case = TRUE, fixed = FALSE)
+      hit   <- which(names(probs) == "excellent")
       if (length(hit)) out[k, it] <- probs[[hit[1]]]
     }
   }
   out
 }
 
-g_items <- c("MORALG","CARESG","KNOWG","LEADG","DISHONG","INTELG")
-mat_naive <- extract_extremely_well(fit_K3, g_items)
+a_items <- grep("_A$", cat_items, value = TRUE)
+mat_naive <- extract_excellent(fit_K3, a_items)
 
 matplot(t(mat_naive), type = "b", pch = 19, lty = 1,
-        xaxt = "n", xlab = "", ylab = "P(rating = 'Extremely well')",
-        main = "Naive K=3, items about Bush")
-axis(1, at = seq_along(g_items), labels = g_items, las = 2, cex.axis = 0.8)
-legend("topright", legend = rownames(mat_naive), pch = 19, col = 1:nrow(mat_naive), bty = "n")
+        xaxt = "n", xlab = "", ylab = "P(rating = 'excellent')",
+        main = "Naive K=3, items about candidate A")
+axis(1, at = seq_along(a_items), labels = a_items, las = 2, cex.axis = 0.8)
+legend("topright", legend = rownames(mat_naive), pch = 19,
+       col = 1:nrow(mat_naive), bty = "n")
 ```
 
-The three classes separate as you would expect: one strongly positive
-about Bush across all items, one negative, one ambivalent. The BVR-
-adjusted model recovers the same broad story but with sharper edges
-because direct effects relieve the latent classes from explaining
-the within-candidate covariance:
+The three classes separate as expected from the generative model: one
+strongly positive about candidate A, one negative (these are the
+class that favours B), and one moderate.
 
-```{r class-profile-bvr, eval = TRUE, fig.cap = "BVR-adjusted K=3: same items.", out.width = "85%"}
-mat_bvr <- extract_extremely_well(elec_bvr, g_items)
-matplot(t(mat_bvr), type = "b", pch = 19, lty = 1,
-        xaxt = "n", xlab = "", ylab = "P(rating = 'Extremely well')",
-        main = "BVR-adjusted K=3, items about Bush")
-axis(1, at = seq_along(g_items), labels = g_items, las = 2, cex.axis = 0.8)
-legend("topright", legend = rownames(mat_bvr), pch = 19, col = 1:nrow(mat_bvr), bty = "n")
-```
-
-# 6. Takeaways
+# 7. Takeaways
 
 - **Run the diagnostic.** A satisfying BIC trajectory across $K$ is not
   evidence that your specification is correct. Always inspect
   `bvr_categorical()` (for categorical indicators) or `bvr_tests()`
   (for continuous) before naming the classes.
-- **Pairwise vs. low-rank.** Direct effects handle a few misbehaving
-  pairs efficiently; SLD handles broad residual structure efficiently.
-  The two are complementary; `fit_lca()` lets you supply both.
+- **Pairwise vs. low-rank.** Direct effects handle a few large isolated
+  residual pairs efficiently; SLD handles broad residual covariance
+  efficiently. The two are complementary. `fit_lca()` lets you supply
+  both via `cat_direct_effects` and `spectral_rank`.
 - **Don't add classes to absorb dependence.** The naive K=4 fit looked
   like it was winning on BIC. Once we model the local dependence
-  properly, K=3 is fine, and class meaning is preserved across
+  properly via SLD, K=3 is fine, and class meaning is preserved across
   refits.
 
 See also:
@@ -359,8 +328,7 @@ See also:
 - `vignette("distal-covariates")` for distal outcome estimation under
   BCH weighting, and for the formula interface to concomitant
   predictors.
-- `vignette("sld-theory")` for the math and a worked example where
-  SLD outperforms BVR.
+- `vignette("sld-theory")` for the math and a worked example.
 
 # Session info
 

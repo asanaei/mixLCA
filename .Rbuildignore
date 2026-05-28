@@ -20,3 +20,4 @@
 ^cran-comments\.md$
 ^\.gitignore$
 ^plans$
+^data-raw$

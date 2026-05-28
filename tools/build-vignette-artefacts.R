@@ -11,87 +11,97 @@ out_dir <- file.path("inst", "extdata")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
 # ---------------------------------------------------------------------------
-# Dataset 1: poLCA::election (categorical workflow vignette)
+# Dataset 1: voter_perceptions (categorical workflow vignette)
 # ---------------------------------------------------------------------------
-data("election", package = "poLCA")
-cat_items <- c("MORALG","CARESG","KNOWG","LEADG","DISHONG","INTELG",
-               "MORALB","CARESB","KNOWB","LEADB","DISHONB","INTELB")
-keep <- stats::complete.cases(election[, cat_items])
-elec <- election[keep, ]
+data("voter_perceptions", package = "mixLCA")
+cat_items <- names(voter_perceptions)
 
-cat("=== election: K = 2, 3, 4 (naive) ===\n")
-elec_fits <- lapply(2:4, function(K) {
-  fit_lca(elec, categorical = cat_items, n_classes = K,
+cat("=== voter_perceptions: K = 2, 3, 4 (naive) ===\n")
+voter_fits <- lapply(2:4, function(K) {
+  fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
           control = lca_control(n_starts = 5, seed = 110),
           verbose = FALSE)
 })
-names(elec_fits) <- paste0("K", 2:4)
-saveRDS(elec_fits, file.path(out_dir, "election_naive_fits.rds"))
+names(voter_fits) <- paste0("K", 2:4)
+saveRDS(voter_fits, file.path(out_dir, "voter_naive_fits.rds"))
 
-cat("=== election: K = 3 with BVR-guided direct effects ===\n")
-elec_bvr <- auto_bvr(
-  data = elec, categorical = cat_items,
-  K_range = 3,                # fix K so the table reads cleanly
+cat("=== voter_perceptions: K = 3 with BVR-guided direct effects ===\n")
+voter_bvr <- auto_bvr(
+  data = voter_perceptions, categorical = cat_items,
+  K_range = 3,
   max_direct_effects = 4L,
   bvr_threshold = 3.84,
   seed = 110, verbose = FALSE,
   n_starts = 5)
-saveRDS(elec_bvr, file.path(out_dir, "election_bvr_fit.rds"))
+saveRDS(voter_bvr, file.path(out_dir, "voter_bvr_fit.rds"))
 
-cat("=== election: K = 3 with SLD (auto_sld) ===\n")
-elec_sld <- auto_sld(
-  data = elec, categorical = cat_items,
+cat("=== voter_perceptions: K = 3 with SLD (auto_sld) ===\n")
+voter_sld <- auto_sld(
+  data = voter_perceptions, categorical = cat_items,
   n_classes = 3,
   max_rank_per_class = 3L,
   criterion = "BIC",
   seed = 110, verbose = FALSE)
-saveRDS(elec_sld, file.path(out_dir, "election_sld_fit.rds"))
+saveRDS(voter_sld, file.path(out_dir, "voter_sld_fit.rds"))
 
 # ---------------------------------------------------------------------------
-# Dataset 2: mlbench::PimaIndiansDiabetes2 (continuous + distal vignette)
+# Dataset 2: health_screening (continuous + distal vignette)
 # ---------------------------------------------------------------------------
-data("PimaIndiansDiabetes2", package = "mlbench")
-pima_vars <- c("glucose","pressure","mass","pedigree")
-pima <- PimaIndiansDiabetes2[stats::complete.cases(
-  PimaIndiansDiabetes2[, c(pima_vars,"age","diabetes")]), ]
+data("health_screening", package = "mixLCA")
+hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
 
-cat("=== pima: K = 2, 3 (naive continuous) ===\n")
-pima_naive <- lapply(2:3, function(K) {
-  fit_lca(pima, continuous = pima_vars, n_classes = K,
+cat("=== health_screening: K = 2, 3 (naive continuous) ===\n")
+hs_naive <- lapply(2:3, function(K) {
+  fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10, seed = 110),
           verbose = FALSE)
 })
-names(pima_naive) <- paste0("K", 2:3)
-saveRDS(pima_naive, file.path(out_dir, "pima_naive_fits.rds"))
+names(hs_naive) <- paste0("K", 2:3)
+saveRDS(hs_naive, file.path(out_dir, "hs_naive_fits.rds"))
 
-cat("=== pima: K = 2 with concomitant age (character vec) ===\n")
-pima_concom_chr <- fit_lca(
-  pima, continuous = pima_vars, concomitant = "age",
+cat("=== health_screening: K = 2 with concomitant age (character vec) ===\n")
+hs_concom_chr <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
-saveRDS(pima_concom_chr, file.path(out_dir, "pima_concom_chr.rds"))
+saveRDS(hs_concom_chr, file.path(out_dir, "hs_concom_chr.rds"))
 
-cat("=== pima: K = 2 with concomitant ~ age + I(age^2) (formula) ===\n")
-pima_concom_fm <- fit_lca(
-  pima, continuous = pima_vars, concomitant = ~ age + I(age^2),
+cat("=== health_screening: K = 2 with concomitant ~ age + I(age^2) (formula) ===\n")
+hs_concom_fm <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = ~ age + I(age^2),
   n_classes = 2,
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
-saveRDS(pima_concom_fm, file.path(out_dir, "pima_concom_fm.rds"))
+saveRDS(hs_concom_fm, file.path(out_dir, "hs_concom_fm.rds"))
 
-cat("=== pima: penalized covariance ===\n")
-pima_pen <- fit_lca(
-  pima, continuous = pima_vars, concomitant = "age",
+cat("=== health_screening: penalized covariance ===\n")
+hs_pen <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
-saveRDS(pima_pen, file.path(out_dir, "pima_penalized.rds"))
+saveRDS(hs_pen, file.path(out_dir, "hs_penalized.rds"))
 
-cat("=== pima: distal model for diabetes ===\n")
-pima_distal <- distal(pima_concom_chr, pima,
-                      formula = diabetes ~ age,
-                      family  = "binomial")
-saveRDS(pima_distal, file.path(out_dir, "pima_distal.rds"))
+cat("=== health_screening: distal model for outcome ===\n")
+hs_distal <- distal(hs_concom_chr, health_screening,
+                    formula = outcome ~ age,
+                    family  = "binomial")
+saveRDS(hs_distal, file.path(out_dir, "hs_distal.rds"))
+
+# ---------------------------------------------------------------------------
+# Remove the legacy artefacts so they don't accumulate
+# ---------------------------------------------------------------------------
+legacy <- c("election_naive_fits.rds", "election_bvr_fit.rds",
+            "election_sld_fit.rds",
+            "pima_naive_fits.rds", "pima_concom_chr.rds",
+            "pima_concom_fm.rds", "pima_penalized.rds",
+            "pima_distal.rds")
+for (f in file.path(out_dir, legacy)) {
+  if (file.exists(f)) {
+    file.remove(f)
+    cat("removed legacy:", f, "\n")
+  }
+}
 
 cat("\nAll artefacts written to ", out_dir, "\n", sep = "")

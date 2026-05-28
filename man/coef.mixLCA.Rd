@@ -17,3 +17,18 @@ Named list.
 \description{
 Returns a list of all estimated parameters.
 }
+\examples{
+\donttest{
+data(health_screening)
+fit <- fit_lca(health_screening,
+               continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+               concomitant = ~ age,
+               n_classes   = 2,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+cc <- coef(fit)
+names(cc)
+cc$concomitant
+cc$means
+}
+}

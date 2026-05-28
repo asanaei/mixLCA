@@ -63,63 +63,57 @@ multinomial logistic regression on class membership, and distals are
 estimated *after* the measurement model has converged, under
 Bollen-Curran-Heckman (BCH) inverse-classification-error weighting.
 
-This vignette walks through both pieces on the Pima Indians Diabetes
-dataset, a small, well-known mixed dataset with continuous health
-indicators, an age covariate, and a binary diabetes outcome.
+This vignette walks through both pieces on the embedded
+`health_screening` dataset: a synthetic 800-subject screening study
+with four continuous biomarkers, an age covariate, and a binary
+outcome.
 
 # Setup
 
 ```{r data}
-data("PimaIndiansDiabetes2", package = "mlbench")
-pima_vars <- c("glucose", "pressure", "mass", "pedigree")
-pima <- PimaIndiansDiabetes2[stats::complete.cases(
-  PimaIndiansDiabetes2[, c(pima_vars, "age", "diabetes")]), ]
-dim(pima)
-head(pima[, c(pima_vars, "age", "diabetes")])
+data(health_screening)
+hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
+dim(health_screening)
+head(health_screening)
 ```
 
 ```{r data-load, eval = !RUN_LIVE, include = FALSE}
-data("PimaIndiansDiabetes2", package = "mlbench")
-pima_vars <- c("glucose", "pressure", "mass", "pedigree")
-pima <- PimaIndiansDiabetes2[stats::complete.cases(
-  PimaIndiansDiabetes2[, c(pima_vars, "age", "diabetes")]), ]
+data(health_screening)
+hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
 ```
 
-A few hundred complete cases remain after listwise deletion on the
-four indicators plus `age` and `diabetes`.
+The dataset has no missing values, so listwise deletion is not needed.
 
 # 1. A naive measurement model (no covariates, no distal)
 
 ```{r naive}
-pima_naive <- lapply(2:3, function(K) {
-  fit_lca(pima, continuous = pima_vars, n_classes = K,
+hs_naive <- lapply(2:3, function(K) {
+  fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10, seed = 110),
           verbose = FALSE)
 })
-names(pima_naive) <- paste0("K", 2:3)
+names(hs_naive) <- paste0("K", 2:3)
 ```
 
 ```{r naive-load, eval = !RUN_LIVE, include = FALSE}
-pima_naive <- load_fit("pima_naive_fits.rds")
+hs_naive <- load_fit("hs_naive_fits.rds")
 ```
 
 ```{r naive-table, eval = TRUE}
-compare_models(pima_naive)
+compare_models(hs_naive)
 ```
 
-The K=2 model has the lowest BIC and the cleanest interpretation
-(a "metabolically healthier" vs. "less healthy" split). We work with it
-below.
+The K=2 model has the lowest BIC and a clean interpretation
+(low-marker vs. high-marker classes). We work with it below.
 
 ```{r naive-profiles, eval = TRUE, fig.cap = "Class-mean profiles, naive K=2."}
-plot(pima_naive$K2, type = "profiles")
+plot(hs_naive$K2, type = "profiles")
 ```
 
 # 2. Adding a concomitant predictor
 
-The age of the respondent is plausibly antecedent to her metabolic
-class (the data come from women 21+). We let class membership depend
-on age via multinomial logistic regression.
+Age is plausibly antecedent to the marker-class status. We let class
+membership depend on age via multinomial logistic regression.
 
 ## Character-vector form
 
@@ -127,32 +121,32 @@ The simplest specification passes a character vector of variable
 names:
 
 ```{r concom-chr}
-pima_concom_chr <- fit_lca(
-  pima, continuous = pima_vars, concomitant = "age",
+hs_concom_chr <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
 ```
 
 ```{r concom-chr-load, eval = !RUN_LIVE, include = FALSE}
-pima_concom_chr <- load_fit("pima_concom_chr.rds")
+hs_concom_chr <- load_fit("hs_concom_chr.rds")
 ```
 
 ```{r concom-chr-coefs, eval = TRUE}
-pima_concom_chr$concomitant_coefs
+hs_concom_chr$concomitant_coefs
 ```
 
 Each column gives the log-odds (relative to class 1) for the
-corresponding non-reference class. Here the coefficient on `age` is
-positive, meaning older respondents are more likely to fall in class 2,
-consistent with metabolic markers worsening with age.
+corresponding non-reference class. The sign and magnitude depend on
+the EM's class-label permutation; pair the coefficient with the
+class profiles to interpret it.
 
 For inference, pair the coefficients with their standard errors:
 
 ```{r concom-chr-se, eval = TRUE}
-se <- concomitant_se(pima_concom_chr, pima)
+se <- concomitant_se(hs_concom_chr, health_screening)
 data.frame(
-  Estimate = round(pima_concom_chr$concomitant_coefs[, 1], 4),
+  Estimate = round(hs_concom_chr$concomitant_coefs[, 1], 4),
   SE       = round(se[, 1], 4)
 )
 ```
@@ -165,25 +159,25 @@ constructs the design matrix via `stats::model.matrix`, so anything
 that works in `lm()` works here:
 
 ```{r concom-fm}
-pima_concom_fm <- fit_lca(
-  pima, continuous = pima_vars, concomitant = ~ age + I(age^2),
+hs_concom_fm <- fit_lca(
+  health_screening, continuous = hs_vars,
+  concomitant = ~ age + I(age^2),
   n_classes = 2,
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
 ```
 
 ```{r concom-fm-load, eval = !RUN_LIVE, include = FALSE}
-pima_concom_fm <- load_fit("pima_concom_fm.rds")
+hs_concom_fm <- load_fit("hs_concom_fm.rds")
 ```
 
 ```{r concom-fm-coefs, eval = TRUE}
-pima_concom_fm$concomitant_coefs
+hs_concom_fm$concomitant_coefs
 ```
 
-The quadratic captures whether the age effect saturates. With a single
-positive linear term and a small negative quadratic, the model says
-class-2 membership rises with age, but the marginal effect declines
-above a certain age.
+The quadratic term lets you test whether the age effect saturates.
+For these data the quadratic coefficient is effectively zero, which
+is consistent with the linear-in-age generative model.
 
 Other useful forms:
 
@@ -207,9 +201,9 @@ downstream distal model that expects per-row alignment. Impute or
 filter before calling:
 
 ```{r na-error, eval = FALSE}
-pima_na <- pima
-pima_na$age[1:3] <- NA
-fit_lca(pima_na, continuous = pima_vars, concomitant = "age",
+hs_na <- health_screening
+hs_na$age[1:3] <- NA
+fit_lca(hs_na, continuous = hs_vars, concomitant = "age",
         n_classes = 2)
 #> Error: Missing values detected in concomitant predictors.
 #> Impute or filter these rows before calling fit_lca() ...
@@ -221,10 +215,10 @@ fit_lca(pima_na, continuous = pima_vars, concomitant = "age",
 parameters. Three output types:
 
 ```{r predict-types, eval = TRUE}
-new_rows <- pima[1:5, ]
-prob <- predict(pima_concom_chr, newdata = new_rows)          # default: matrix
-cls  <- predict(pima_concom_chr, newdata = new_rows, type = "class")
-all  <- predict(pima_concom_chr, newdata = new_rows, type = "all")
+new_rows <- health_screening[1:5, ]
+prob <- predict(hs_concom_chr, newdata = new_rows)          # default: matrix
+cls  <- predict(hs_concom_chr, newdata = new_rows, type = "class")
+all  <- predict(hs_concom_chr, newdata = new_rows, type = "all")
 
 list(prob = prob, cls = cls, all = all)
 ```
@@ -234,9 +228,9 @@ rows are padded with NA so the output length always equals
 `nrow(newdata)`:
 
 ```{r predict-na, eval = TRUE}
-new_with_na <- pima[1:5, ]
+new_with_na <- health_screening[1:5, ]
 new_with_na$age[c(2, 4)] <- NA
-predict(pima_concom_chr, newdata = new_with_na)
+predict(hs_concom_chr, newdata = new_with_na)
 ```
 
 Rows 2 and 4 are NA, which makes `cbind(new_with_na, predict(...))`
@@ -244,7 +238,7 @@ unambiguous.
 
 # 4. Distal outcome estimation
 
-The diabetes status is a *consequence* of metabolic class. We do
+The screening outcome is a *consequence* of marker class. We do
 **not** put it in the measurement model; we estimate it separately
 under BCH weighting.
 
@@ -256,29 +250,30 @@ is frozen before the distal step, no gradient from the distal outcome
 can contaminate class meaning.
 
 ```{r distal}
-pima_distal <- distal(pima_concom_chr, pima,
-                      formula = diabetes ~ age,
-                      family  = "binomial")
+hs_distal <- distal(hs_concom_chr, health_screening,
+                    formula = outcome ~ age,
+                    family  = "binomial")
 ```
 
 ```{r distal-load, eval = !RUN_LIVE, include = FALSE}
-pima_distal <- load_fit("pima_distal.rds")
+hs_distal <- load_fit("hs_distal.rds")
 ```
 
 ```{r distal-print, eval = TRUE}
-print(pima_distal)
+print(hs_distal)
 ```
 
-Reading the output: class 1 (the metabolically healthier class) has a
-negative diabetes intercept (low baseline risk); class 2 has a
-positive intercept (higher baseline risk). The `age` slope within each
-class is small. Class membership already absorbs most of the age
-signal.
+Reading the output: one class has a negative intercept (low baseline
+P(outcome = "yes")), the other a less-negative or positive intercept
+(higher baseline risk). The `age` slope within each class is small
+and positive: class membership absorbs most of the age signal, with a
+modest within-class residual age effect.
 
 The **classification error matrix** at the bottom tells you how
-confident the modal assignment is. Diagonal dominance close to 1 means
-the BCH adjustment is mild; values closer to 0.5 mean classification
-is uncertain and the BCH weights are pulling more strongly.
+confident the modal assignment is. Diagonal dominance close to 1
+means the BCH adjustment is mild; values closer to 0.5 mean
+classification is uncertain and the BCH weights are pulling more
+strongly.
 
 ## Other families
 
@@ -287,15 +282,16 @@ the `family` argument:
 
 ```{r distal-families, eval = FALSE}
 # Continuous distal outcome:
-distal(pima_concom_chr, pima, outcome ~ age, family = "gaussian")
+distal(hs_concom_chr, my_data, my_continuous_outcome ~ age,
+       family = "gaussian")
 
 # Count distal outcome:
-distal(pima_concom_chr, pima, n_events ~ age, family = "poisson")
+distal(hs_concom_chr, my_data, n_events ~ age, family = "poisson")
 ```
 
 The IRLS solver inside `distal()` handles negative BCH weights via
-eigen-projection plus step-halving (a real divergence risk before
-mixLCA 1.0.1) and reports `NA` standard errors when the sandwich
+eigen-projection plus step-halving (a real divergence risk in earlier
+versions) and reports `NA` standard errors when the sandwich
 estimator goes negative (rather than the misleading $p \approx 0$ you
 get from forcing the variance to zero).
 
@@ -306,23 +302,29 @@ For continuous indicators with local dependence, switching from
 sparsity in the inverse covariance matrix.
 
 ```{r penalized}
-pima_pen <- fit_lca(
-  pima, continuous = pima_vars, concomitant = "age",
+hs_pen <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
 ```
 
 ```{r penalized-load, eval = !RUN_LIVE, include = FALSE}
-pima_pen <- load_fit("pima_penalized.rds")
+hs_pen <- load_fit("hs_penalized.rds")
 ```
 
 The default `penalty = "auto"` selects a heuristic value from data
 scale. To request exactly no shrinkage, set `penalty = 0` explicitly.
 
 ```{r penalized-cov, eval = TRUE}
-round(pima_pen$continuous_params$covariances[[1]], 4)
+round(hs_pen$continuous_params$covariances[[1]], 2)
 ```
+
+On this dataset the auto-selected penalty is large enough that every
+off-diagonal element is shrunk to exactly zero, leaving a diagonal
+covariance. This is the right answer: the markers are conditionally
+independent within class by construction, so any nonzero
+off-diagonal would be over-fitting.
 
 # 6. Putting it together
 
@@ -331,21 +333,21 @@ A typical analysis arc:
 ```{r workflow-summary, eval = FALSE}
 # 1. Decide K with a naive fit
 fits <- lapply(2:5, function(K)
-  fit_lca(pima, continuous = pima_vars, n_classes = K,
+  fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10, seed = 110)))
 compare_models(fits)
 
 # 2. Add concomitants
-fit <- fit_lca(pima, continuous = pima_vars,
+fit <- fit_lca(health_screening, continuous = hs_vars,
                concomitant = ~ age,
                n_classes = 2,
                control = lca_control(n_starts = 10, seed = 110))
 
 # 3. Diagnose local dependence
-bvr_tests(fit, pima)
+bvr_tests(fit, health_screening)
 
 # 4. Estimate distal under BCH
-distal(fit, pima, diabetes ~ age, family = "binomial")
+distal(fit, health_screening, outcome ~ age, family = "binomial")
 ```
 
 See `vignette("workflow")` for the categorical local-dependence side

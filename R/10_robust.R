@@ -137,6 +137,18 @@ run_em_robust <- function(data, continuous = NULL, categorical = NULL,
 #'     \item{\code{$models}}{Named list of \code{mixLCA} objects.}
 #'     \item{\code{$comparison}}{Data frame from \code{compare_models()}.}
 #'   }
+#'
+#' @examples
+#' \dontrun{
+#' data(voter_perceptions)
+#' enum <- enumerate_lca(
+#'   data        = voter_perceptions,
+#'   categorical = names(voter_perceptions),
+#'   k_range     = 2:4,
+#'   n_starts    = 5,
+#'   verbose     = FALSE)
+#' enum$comparison
+#' }
 #' @export
 enumerate_lca <- function(data, continuous = NULL, categorical = NULL,
                           concomitant = NULL, k_range = 2:4,

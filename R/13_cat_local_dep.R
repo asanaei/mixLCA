@@ -10,12 +10,23 @@
 #' categorical manifest variables. Under local independence the model-implied
 #' bivariate frequencies should match the observed ones. Large BVR values
 #' (rule of thumb > 4) signal local dependence addressable by adding direct
-#' effects via \code{cat_direct_effects} in \code{\link{lca}}.
+#' effects via \code{cat_direct_effects} in \code{\link{fit_lca}}.
 #'
 #' @param model A \code{mixLCA} object.
 #' @param data Data frame used for estimation.
 #' @return Data frame with columns \code{var1}, \code{var2}, \code{bvr},
 #'   \code{df}, \code{p_value}, ordered by descending BVR.
+#'
+#' @examples
+#' \donttest{
+#' data(voter_perceptions)
+#' fit <- fit_lca(voter_perceptions,
+#'                categorical = names(voter_perceptions),
+#'                n_classes   = 3,
+#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                verbose     = FALSE)
+#' head(bvr_categorical(fit, voter_perceptions), 5)
+#' }
 #' @export
 bvr_categorical <- function(model, data) {
   if (!inherits(model, "mixLCA"))

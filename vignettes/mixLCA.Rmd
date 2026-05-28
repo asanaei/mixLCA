@@ -50,19 +50,18 @@ unrestricted, diagonal, or sparsified via graphical lasso
 
 ```{r minimal, eval = FALSE}
 library(mixLCA)
-data("PimaIndiansDiabetes2", package = "mlbench")
-pima <- na.omit(PimaIndiansDiabetes2)
+data(health_screening)
 
-fit <- fit_lca(pima,
-               continuous  = c("glucose","pressure","mass","pedigree"),
+fit <- fit_lca(health_screening,
+               continuous  = c("marker_1", "marker_2", "marker_3", "marker_4"),
                concomitant = ~ age,
                n_classes   = 2,
                control     = lca_control(n_starts = 10, seed = 110))
 
-summary(fit, data = pima)
+summary(fit, data = health_screening)
 plot(fit, type = "profiles")
 
-distal(fit, pima, diabetes ~ age, family = "binomial")
+distal(fit, health_screening, outcome ~ age, family = "binomial")
 ```
 
 # Further reading

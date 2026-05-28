@@ -17,7 +17,6 @@ enumerate_lca(
   tol = 1e-06,
   spectral_rank = 0L,
   spectral_pool = FALSE,
-  n_cores = 1L,
   verbose = TRUE,
   kmeans_nstart = 1L
 )
@@ -29,7 +28,7 @@ enumerate_lca(
 
 \item{categorical}{Character vector or NULL.}
 
-\item{concomitant}{Character vector or NULL.}
+\item{concomitant}{Character vector or formula or NULL.}
 
 \item{k_range}{Integer vector of class counts to estimate, e.g.\cr
 \code{2:5}.}
@@ -48,8 +47,6 @@ enumerate_lca(
 
 \item{spectral_pool}{Logical: pool Burt matrices across classes.}
 
-\item{n_cores}{Integer.}
-
 \item{verbose}{Logical.}
 
 \item{kmeans_nstart}{Integer: random starts for internal k-means (default 1).}
@@ -62,6 +59,20 @@ List with:
   }
 }
 \description{
-Fits \code{lca()} for each value in \code{k_range} and returns
-all fitted objects together with a model comparison table.
+Fits \code{fit_lca()} for each value in \code{k_range} and returns
+all fitted objects together with a model comparison table. To run
+the starts in parallel, set a \code{future::plan()} in your session
+before calling this function.
+}
+\examples{
+\dontrun{
+data(voter_perceptions)
+enum <- enumerate_lca(
+  data        = voter_perceptions,
+  categorical = names(voter_perceptions),
+  k_range     = 2:4,
+  n_starts    = 5,
+  verbose     = FALSE)
+enum$comparison
+}
 }

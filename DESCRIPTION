@@ -38,8 +38,6 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    future,
-    poLCA,
-    mlbench
+    future
 Config/testthat/edition: 3
 VignetteBuilder: knitr

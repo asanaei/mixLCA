@@ -30,3 +30,24 @@ outcomes, using BCH inverse-classification-error weights. The
 measurement model posteriors are fixed before this step (the "cut"):
 no gradient from distal outcomes reaches the class definitions.
 }
+\examples{
+\donttest{
+data(health_screening)
+fit <- fit_lca(health_screening,
+               continuous  = c("marker_1","marker_2","marker_3","marker_4"),
+               concomitant = ~ age,
+               n_classes   = 2,
+               control     = lca_control(n_starts = 3, seed = 110),
+               verbose     = FALSE)
+
+# Binary distal outcome under BCH weighting
+d_bin <- distal(fit, health_screening,
+                outcome ~ age, family = "binomial")
+print(d_bin)
+
+# Continuous distal outcome (uses marker_4 as a stand-in)
+d_gauss <- distal(fit, health_screening,
+                  marker_4 ~ age, family = "gaussian")
+print(d_gauss)
+}
+}

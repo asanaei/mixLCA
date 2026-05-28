@@ -9,6 +9,15 @@
 Finite mixture modelling with partitioned architecture for antecedent
 predictors, contemporaneous manifest indicators, and distal outcomes.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://asanaei.github.io/mixLCA/}
+  \item \url{https://github.com/asanaei/mixLCA}
+  \item Report bugs at \url{https://github.com/asanaei/mixLCA/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Ali Sanaei \email{sanaei@uchicago.edu}
 

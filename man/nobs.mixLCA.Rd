@@ -17,3 +17,14 @@ Integer.
 \description{
 nobs Method for mixLCA
 }
+\examples{
+\donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 2,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+nobs(fit)
+}
+}

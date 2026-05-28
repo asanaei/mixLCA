@@ -15,7 +15,6 @@ auto_sld(
   criterion = c("BIC", "aBIC", "AIC", "ICL"),
   base_model = NULL,
   seed = 110L,
-  n_cores = 1L,
   verbose = TRUE,
   ...
 )
@@ -43,11 +42,9 @@ an independence model (d = 0) is fitted automatically.}
 
 \item{seed}{Integer random seed for the base model.}
 
-\item{n_cores}{Integer: cores for parallel candidate evaluation.}
-
 \item{verbose}{Logical: print search trajectory.}
 
-\item{...}{Additional arguments forwarded to \code{lca}
+\item{...}{Additional arguments forwarded to \code{fit_lca}
 (e.g., \code{max_iter}, \code{tol}, \code{dependence}).}
 }
 \value{
@@ -70,4 +67,20 @@ Because each candidate is hot-started from the current model, the
 latent class definitions remain anchored, preventing latent-class
 drift. Classes that do not exhibit residual dependence retain
 \code{d = 0}, avoiding unnecessary parameter proliferation.
+}
+\examples{
+\dontrun{
+data(voter_perceptions)
+fit <- auto_sld(
+  data        = voter_perceptions,
+  categorical = names(voter_perceptions),
+  n_classes   = 3,
+  max_rank_per_class = 3L,
+  criterion   = "BIC",
+  seed        = 110L,
+  verbose     = FALSE)
+fit$specs$spectral_rank      # class-specific ranks selected
+fit$auto_spectral_path        # accepted increments
+fit_indices(fit)$BIC
+}
 }
