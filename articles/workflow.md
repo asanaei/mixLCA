@@ -8,7 +8,7 @@ class. That is, conditional on class membership the items carry no
 further information about each other. When that assumption is violated,
 the EM algorithm compensates by inventing extra classes whose only
 purpose is to absorb pairwise correlation. The resulting solution
-inflates $K$, distorts class meaning, and inflates the standard errors
+inflates $`K`$, distorts class meaning, and inflates the standard errors
 of any downstream distal analysis.
 
 This vignette walks through three responses to that problem on a single
@@ -37,6 +37,7 @@ affect.
 ## Setup
 
 ``` r
+
 data("election", package = "poLCA")
 cat_items <- c("MORALG", "CARESG", "KNOWG",  "LEADG",  "DISHONG", "INTELG",
                "MORALB", "CARESB", "KNOWB",  "LEADB",  "DISHONB", "INTELB")
@@ -59,6 +60,7 @@ the (nonexistent) continuous side and *implicit* local independence on
 the categorical side.
 
 ``` r
+
 elec_fits <- lapply(2:4, function(K) {
   fit_lca(elec, categorical = cat_items, n_classes = K,
           control = lca_control(n_starts = 5, seed = 110),
@@ -68,6 +70,7 @@ names(elec_fits) <- paste0("K", 2:4)
 ```
 
 ``` r
+
 compare_models(elec_fits)
 #>    K        LL n_params      AIC      BIC     aBIC   entropy      ICL
 #> K2 2 -17344.92       73 34835.85 35213.88 34981.99 0.8099402 35559.30
@@ -76,7 +79,7 @@ compare_models(elec_fits)
 ```
 
 The standard reading: BIC keeps dropping as we add classes, suggesting
-$K \geq 4$. Entropy is in the comfortable range. Most analysts would
+$`K \ge 4`$. Entropy is in the comfortable range. Most analysts would
 declare success here.
 
 That conclusion is fragile.
@@ -87,9 +90,10 @@ That conclusion is fragile.
 computes a chi-squared statistic for each pair of items, contrasting the
 observed bivariate frequency against what the model predicts under local
 independence. Values above 3.84 indicate significant local dependence
-($p < .05$, ${df} = 1$).
+($`p < .05`$, $`\mathrm{df} = 1`$).
 
 ``` r
+
 fit_K3 <- elec_fits$K3
 bvr_K3 <- bvr_categorical(fit_K3, elec)
 head(bvr_K3, 8)
@@ -122,6 +126,7 @@ step it identifies the largest BVR pair, adds it as a direct effect,
 refits, and stops when BIC ceases to improve (or a cap is hit).
 
 ``` r
+
 elec_bvr <- auto_bvr(
   data = elec, categorical = cat_items,
   K_range = 3,                 # fix K so the comparison stays clean
@@ -136,6 +141,7 @@ elec_bvr$auto_path$direct_effects
 The search added three direct effects:
 
 ``` r
+
 elec_bvr$auto_path$direct_effects
 #> [[1]]
 #> [1] "KNOWG"  "INTELG"
@@ -153,6 +159,7 @@ competence (`INTELG`, `LEADB`) on the *same* candidate. The BVR
 machinery surfaced what was already visible in the residual table.
 
 ``` r
+
 fi_naive <- fit_indices(fit_K3)
 fi_bvr   <- fit_indices(elec_bvr)
 
@@ -170,15 +177,15 @@ data.frame(
 
 BIC drops sharply (~ 33 points per direct effect on this dataset, far in
 excess of the BIC penalty for the extra parameters). The specification
-is straightforwardly better, and it does so without inflating $K$.
+is straightforwardly better, and it does so without inflating $`K`$.
 
 ## 4. Spectral Local Dependence (SLD)
 
 Direct effects work pair by pair. When the dependence is
 *low-dimensional* (for example, an underlying latent direction such as
 partisanship that pulls many ratings of the same candidate together),
-SLD captures the same structure in a single rank-$d$ projection instead
-of $d \cdot K$ separate pairwise terms.
+SLD captures the same structure in a single rank-$`d`$ projection
+instead of $`d \cdot K`$ separate pairwise terms.
 
 [`auto_sld()`](https://asanaei.github.io/mixLCA/reference/auto_sld.md)
 runs a greedy forward search over class-specific ranks, adding one rank
@@ -186,6 +193,7 @@ to the class with the largest unmodelled eigenvalue, accepting only if
 BIC improves.
 
 ``` r
+
 elec_sld <- auto_sld(
   data = elec, categorical = cat_items,
   n_classes = 3,
@@ -196,6 +204,7 @@ elec_sld$specs$spectral_rank
 ```
 
 ``` r
+
 elec_sld$specs$spectral_rank
 #> [1] 1 0 2
 round(fit_indices(elec_sld)$BIC, 2)
@@ -211,6 +220,7 @@ though smaller than the BVR-adjusted fit (~33286).
 This comparison is informative on its own:
 
 ``` r
+
 fi_naive <- fit_indices(fit_K3)
 fi_bvr   <- fit_indices(elec_bvr)
 fi_sld   <- fit_indices(elec_sld)
@@ -236,8 +246,8 @@ implies, even pairs that the data does not flag as dependent.
 
 **SLD shines elsewhere**: when residual covariance is *broadly*
 distributed across many items (say, a partisanship dimension that shifts
-every rating slightly), the rank-$d$ projection beats
-$\left( \frac{J}{2} \right)$ candidate direct-effect terms. See
+every rating slightly), the rank-$`d`$ projection beats $`\binom{J}{2}`$
+candidate direct-effect terms. See
 [`vignette("sld-theory")`](https://asanaei.github.io/mixLCA/articles/sld-theory.md)
 for the math and a worked example.
 
@@ -245,6 +255,7 @@ You can also inspect the SLD loadings to read off which items contribute
 to each latent direction:
 
 ``` r
+
 plot(elec_sld, type = "spectral_loadings", dimension = 1, class = 3)
 ```
 
@@ -255,6 +266,7 @@ SLD loadings: rank 1 in class 3.
 ## 5. Substantive comparison: who are the classes?
 
 ``` r
+
 props_naive <- round(colMeans(get_posteriors(fit_K3)), 3)
 props_bvr   <- round(colMeans(get_posteriors(elec_bvr)), 3)
 data.frame(class = 1:3, naive = props_naive, bvr_adjusted = props_bvr)
@@ -268,6 +280,7 @@ The class proportions move only slightly. The substantive class meaning
 changes more visibly in the response profiles:
 
 ``` r
+
 # Build a small profile plot manually from the categorical params.
 # This keeps the vignette dependency-light and shows readers exactly
 # how to extract any quantity from a fitted mixLCA object.
@@ -307,6 +320,7 @@ because direct effects relieve the latent classes from explaining the
 within-candidate covariance:
 
 ``` r
+
 mat_bvr <- extract_extremely_well(elec_bvr, g_items)
 matplot(t(mat_bvr), type = "b", pch = 19, lty = 1,
         xaxt = "n", xlab = "", ylab = "P(rating = 'Extremely well')",
@@ -321,8 +335,8 @@ BVR-adjusted K=3: same items.
 
 ## 6. Takeaways
 
-- **Run the diagnostic.** A satisfying BIC trajectory across $K$ is not
-  evidence that your specification is correct. Always inspect
+- **Run the diagnostic.** A satisfying BIC trajectory across $`K`$ is
+  not evidence that your specification is correct. Always inspect
   [`bvr_categorical()`](https://asanaei.github.io/mixLCA/reference/bvr_categorical.md)
   (for categorical indicators) or
   [`bvr_tests()`](https://asanaei.github.io/mixLCA/reference/bvr_tests.md)
@@ -347,20 +361,24 @@ See also:
 ## Session info
 
 ``` r
+
 sessionInfo()
-#> R version 4.4.3 (2025-02-28)
-#> Platform: aarch64-apple-darwin20
-#> Running under: macOS Sequoia 15.7.4
+#> R version 4.6.0 (2026-04-24)
+#> Platform: x86_64-pc-linux-gnu
+#> Running under: Ubuntu 24.04.4 LTS
 #> 
 #> Matrix products: default
-#> BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
-#> LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+#> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
 #> 
 #> locale:
-#> [1] C
+#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
 #> 
-#> time zone: America/Chicago
-#> tzcode source: internal
+#> time zone: UTC
+#> tzcode source: system (glibc)
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
@@ -369,16 +387,15 @@ sessionInfo()
 #> [1] mixLCA_1.0.1
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0        compiler_4.4.3    
-#>  [5] tidyselect_1.2.1   Rcpp_1.1.0         jquerylib_0.1.4    systemfonts_1.2.3 
-#>  [9] scales_1.4.0       textshaping_1.0.1  yaml_2.3.10        fastmap_1.2.0     
-#> [13] ggplot2_4.0.2      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
-#> [17] knitr_1.51         htmlwidgets_1.6.4  tibble_3.3.0       desc_1.4.3        
-#> [21] bslib_0.9.0        pillar_1.11.0      RColorBrewer_1.1-3 rlang_1.1.7       
-#> [25] cachem_1.1.0       xfun_0.52          fs_1.6.7           sass_0.4.10       
-#> [29] S7_0.2.1           cli_3.6.5          pkgdown_2.2.0      withr_3.0.2       
-#> [33] magrittr_2.0.3     digest_0.6.37      grid_4.4.3         lifecycle_1.0.5   
-#> [37] vctrs_0.7.1        evaluate_1.0.4     glue_1.8.0         farver_2.1.2      
-#> [41] ragg_1.4.0         rmarkdown_2.30     tools_4.4.3        pkgconfig_2.0.3   
-#> [45] htmltools_0.5.8.1
+#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.0    
+#>  [5] tidyselect_1.2.1   Rcpp_1.1.1-1.1     jquerylib_0.1.4    systemfonts_1.3.2 
+#>  [9] scales_1.4.0       textshaping_1.0.5  yaml_2.3.12        fastmap_1.2.0     
+#> [13] ggplot2_4.0.3      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
+#> [17] knitr_1.51         tibble_3.3.1       desc_1.4.3         bslib_0.11.0      
+#> [21] pillar_1.11.1      RColorBrewer_1.1-3 rlang_1.2.0        cachem_1.1.0      
+#> [25] xfun_0.57          fs_2.1.0           sass_0.4.10        S7_0.2.2          
+#> [29] cli_3.6.6          pkgdown_2.2.0      withr_3.0.2        magrittr_2.0.5    
+#> [33] digest_0.6.39      grid_4.6.0         lifecycle_1.0.5    vctrs_0.7.3       
+#> [37] evaluate_1.0.5     glue_1.8.1         farver_2.1.2       ragg_1.5.2        
+#> [41] rmarkdown_2.31     tools_4.6.0        pkgconfig_2.0.3    htmltools_0.5.9
 ```
