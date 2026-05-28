@@ -1,7 +1,11 @@
 # Enumerate mixLCA Models Across Class Counts
 
-Fits `lca()` for each value in `k_range` and returns all fitted objects
-together with a model comparison table.
+Fits
+[`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md) for
+each value in `k_range` and returns all fitted objects together with a
+model comparison table. To run the starts in parallel, set a
+[`future::plan()`](https://future.futureverse.org/reference/plan.html)
+in your session before calling this function.
 
 ## Usage
 
@@ -19,7 +23,6 @@ enumerate_lca(
   tol = 1e-06,
   spectral_rank = 0L,
   spectral_pool = FALSE,
-  n_cores = 1L,
   verbose = TRUE,
   kmeans_nstart = 1L
 )
@@ -41,7 +44,7 @@ enumerate_lca(
 
 - concomitant:
 
-  Character vector or NULL.
+  Character vector or formula or NULL.
 
 - k_range:
 
@@ -76,10 +79,6 @@ enumerate_lca(
 
   Logical: pool Burt matrices across classes.
 
-- n_cores:
-
-  Integer.
-
 - verbose:
 
   Logical.
@@ -100,3 +99,18 @@ List with:
 
   Data frame from
   [`compare_models()`](https://asanaei.github.io/mixLCA/reference/compare_models.md).
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+data(voter_perceptions)
+enum <- enumerate_lca(
+  data        = voter_perceptions,
+  categorical = names(voter_perceptions),
+  k_range     = 2:4,
+  n_starts    = 5,
+  verbose     = FALSE)
+enum$comparison
+} # }
+```

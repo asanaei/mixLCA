@@ -26,3 +26,21 @@ AIC(object, ..., k = 2)
 ## Value
 
 Numeric AIC value.
+
+## Examples
+
+``` r
+# \donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 2,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+AIC(fit)
+#> [1] 61515.59
+# BIC-like penalty (k = log(N))
+AIC(fit, k = log(nobs(fit)))
+#> [1] 61924.45
+# }
+```

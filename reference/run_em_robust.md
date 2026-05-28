@@ -2,7 +2,10 @@
 
 Runs the EM algorithm from multiple random starting points (each seeded
 deterministically from `base_seed + s`) and returns the solution with
-the highest terminal log-likelihood.
+the highest terminal log-likelihood. Parallel execution is delegated to
+the user's active
+[`future::plan()`](https://future.futureverse.org/reference/plan.html);
+this function never alters the global plan or the global random seed.
 
 ## Usage
 
@@ -20,7 +23,6 @@ run_em_robust(
   n_starts = 1L,
   base_seed = 110L,
   verbose = TRUE,
-  n_cores = 1L,
   cat_direct_effects = NULL,
   spectral_rank = 0L,
   spectral_pool = FALSE,
@@ -45,7 +47,7 @@ run_em_robust(
 
 - concomitant:
 
-  Character vector or NULL.
+  Character vector or formula or NULL.
 
 - n_classes:
 
@@ -79,10 +81,6 @@ run_em_robust(
 
   Logical: print per-start progress?
 
-- n_cores:
-
-  Integer: number of cores for parallel execution.
-
 - cat_direct_effects:
 
   List of direct effect pairs, or NULL.
@@ -99,6 +97,10 @@ run_em_robust(
 
   Optional prior `mixLCA` object for warm-start (used for the first
   start only).
+
+- kmeans_nstart:
+
+  Integer: random starts for internal k-means.
 
 ## Value
 

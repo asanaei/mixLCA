@@ -26,6 +26,14 @@
 <url><loc>https://asanaei.github.io/mixLCA/reference/continuous_se.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/count_params.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/distal.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_bvr.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_categorical.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_convergence.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_distal.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_profiles.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_spectral_loadings.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_spectral_scree.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/dot-plot_uncertainty.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/encode_newdata_spectral.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/enumerate_lca.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/eval_categorical_density.html</loc></url>
@@ -38,6 +46,7 @@
 <url><loc>https://asanaei.github.io/mixLCA/reference/get_loadings.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/get_posteriors.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/get_unmodeled_eigenvalues.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/health_screening.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/index.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/lca_control.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/logLik.mixLCA.html</loc></url>
@@ -47,6 +56,7 @@
 <url><loc>https://asanaei.github.io/mixLCA/reference/plot.mixLCA.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/predict.mixLCA.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/prep_spectral_data.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/print.mixDistal.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/print.mixLCA.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/run_em.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/run_em_robust.html</loc></url>
@@ -59,5 +69,6 @@
 <url><loc>https://asanaei.github.io/mixLCA/reference/update_concomitant.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/update_continuous.html</loc></url>
 <url><loc>https://asanaei.github.io/mixLCA/reference/validate_inputs.html</loc></url>
+<url><loc>https://asanaei.github.io/mixLCA/reference/voter_perceptions.html</loc></url>
 </urlset>
 

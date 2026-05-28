@@ -30,7 +30,6 @@ auto_bvr(
   max_direct_effects = 5L,
   bvr_threshold = 3.84,
   seed = 110L,
-  n_cores = 4L,
   verbose = TRUE,
   ...
 )
@@ -52,7 +51,7 @@ auto_bvr(
 
 - concomitant:
 
-  Character vector of concomitant predictor names, or NULL.
+  Character vector or formula of concomitant predictors, or NULL.
 
 - K_range:
 
@@ -72,19 +71,40 @@ auto_bvr(
 
   Random seed.
 
-- n_cores:
-
-  Integer. Number of parallel processes to use. Default is 4.
-
 - verbose:
 
   Logical: print progress?
 
 - ...:
 
-  Additional arguments passed to `lca`.
+  Additional arguments passed to `fit_lca` (e.g., `spectral_rank`,
+  `spectral_pool`).
 
 ## Value
 
 An object of class `mixLCA` representing the final selected model, with
 an additional `auto_path` element recording the search trajectory.
+
+## Details
+
+Parallel execution of multiple starts is delegated to the user's active
+[`future::plan()`](https://future.futureverse.org/reference/plan.html)
+(set it in the session before calling this function).
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+data(voter_perceptions)
+fit <- auto_bvr(
+  data        = voter_perceptions,
+  categorical = names(voter_perceptions),
+  K_range     = 3,
+  max_direct_effects = 4L,
+  seed        = 110L,
+  n_starts    = 3,
+  verbose     = FALSE)
+fit$auto_path$direct_effects
+fit_indices(fit)$BIC
+} # }
+```

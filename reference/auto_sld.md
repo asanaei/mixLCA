@@ -22,7 +22,6 @@ auto_sld(
   criterion = c("BIC", "aBIC", "AIC", "ICL"),
   base_model = NULL,
   seed = 110L,
-  n_cores = 1L,
   verbose = TRUE,
   ...
 )
@@ -72,17 +71,13 @@ auto_sld(
 
   Integer random seed for the base model.
 
-- n_cores:
-
-  Integer: cores for parallel candidate evaluation.
-
 - verbose:
 
   Logical: print search trajectory.
 
 - ...:
 
-  Additional arguments forwarded to `lca` (e.g., `max_iter`, `tol`,
+  Additional arguments forwarded to `fit_lca` (e.g., `max_iter`, `tol`,
   `dependence`).
 
 ## Value
@@ -98,3 +93,22 @@ Because each candidate is hot-started from the current model, the latent
 class definitions remain anchored, preventing latent-class drift.
 Classes that do not exhibit residual dependence retain `d = 0`, avoiding
 unnecessary parameter proliferation.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+data(voter_perceptions)
+fit <- auto_sld(
+  data        = voter_perceptions,
+  categorical = names(voter_perceptions),
+  n_classes   = 3,
+  max_rank_per_class = 3L,
+  criterion   = "BIC",
+  seed        = 110L,
+  verbose     = FALSE)
+fit$specs$spectral_rank      # class-specific ranks selected
+fit$auto_spectral_path        # accepted increments
+fit_indices(fit)$BIC
+} # }
+```

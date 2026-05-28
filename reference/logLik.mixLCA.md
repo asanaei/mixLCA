@@ -22,3 +22,18 @@ logLik(object, ...)
 ## Value
 
 Object of class `logLik`.
+
+## Examples
+
+``` r
+# \donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 2,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+logLik(fit)
+#> 'log Lik.' -30684.79 (df=73)
+# }
+```

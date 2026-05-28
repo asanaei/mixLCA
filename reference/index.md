@@ -6,6 +6,15 @@
   [`mixLCA-package`](https://asanaei.github.io/mixLCA/reference/mixLCA-package.md)
   : mixLCA: Partitioned Latent Class Analysis
 
+## Datasets
+
+Embedded synthetic datasets used by the vignettes and examples.
+
+- [`voter_perceptions`](https://asanaei.github.io/mixLCA/reference/voter_perceptions.md)
+  : Synthetic Voter Perceptions of Two Hypothetical Candidates
+- [`health_screening`](https://asanaei.github.io/mixLCA/reference/health_screening.md)
+  : Synthetic Health-Screening Dataset with Distal Outcome
+
 ## Fitting
 
 Entry points for fitting latent class models.
@@ -80,3 +89,5 @@ Plot method and visual diagnostics.
   : Print a mixLCA Object
 - [`summary(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/summary.mixLCA.md)
   : Summary Method for mixLCA
+- [`print(`*`<mixDistal>`*`)`](https://asanaei.github.io/mixLCA/reference/print.mixDistal.md)
+  : Print a mixDistal Object

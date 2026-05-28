@@ -23,3 +23,24 @@ bvr_tests(model, data)
 
 Data frame with columns: `var1`, `var2`, `residual_cov`, `chi_sq`,
 `p_value`.
+
+## Examples
+
+``` r
+# \donttest{
+data(health_screening)
+fit <- fit_lca(health_screening,
+               continuous = c("marker_1","marker_2","marker_3","marker_4"),
+               n_classes  = 2,
+               control    = lca_control(n_starts = 2, seed = 110),
+               verbose    = FALSE)
+bvr_tests(fit, health_screening)
+#>       var1     var2 residual_cov       chi_sq   p_value
+#> 1 marker_1 marker_2 0.1634123760 1.360048e-05 0.9970575
+#> 2 marker_1 marker_3 0.0893441549 6.760215e-05 0.9934398
+#> 3 marker_1 marker_4 0.0029205511 1.332763e-04 0.9907890
+#> 4 marker_2 marker_3 0.0313433317 1.606327e-05 0.9968022
+#> 5 marker_2 marker_4 0.0013506174 5.503049e-05 0.9940811
+#> 6 marker_3 marker_4 0.0004969341 1.238740e-04 0.9911198
+# }
+```

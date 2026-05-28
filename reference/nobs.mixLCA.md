@@ -22,3 +22,18 @@ nobs(object, ...)
 ## Value
 
 Integer.
+
+## Examples
+
+``` r
+# \donttest{
+data(voter_perceptions)
+fit <- fit_lca(voter_perceptions,
+               categorical = names(voter_perceptions),
+               n_classes   = 2,
+               control     = lca_control(n_starts = 2, seed = 110),
+               verbose     = FALSE)
+nobs(fit)
+#> [1] 2000
+# }
+```

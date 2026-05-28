@@ -22,52 +22,44 @@ regression on class membership, and distals are estimated *after* the
 measurement model has converged, under Bollen-Curran-Heckman (BCH)
 inverse-classification-error weighting.
 
-This vignette walks through both pieces on the Pima Indians Diabetes
-dataset, a small, well-known mixed dataset with continuous health
-indicators, an age covariate, and a binary diabetes outcome.
+This vignette walks through both pieces on the embedded
+`health_screening` dataset: a synthetic 800-subject screening study with
+four continuous biomarkers, an age covariate, and a binary outcome.
 
 ## Setup
 
 ``` r
-
-data("PimaIndiansDiabetes2", package = "mlbench")
-pima_vars <- c("glucose", "pressure", "mass", "pedigree")
-pima <- PimaIndiansDiabetes2[stats::complete.cases(
-  PimaIndiansDiabetes2[, c(pima_vars, "age", "diabetes")]), ]
-dim(pima)
-head(pima[, c(pima_vars, "age", "diabetes")])
+data(health_screening)
+hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
+dim(health_screening)
+head(health_screening)
 ```
 
-A few hundred complete cases remain after listwise deletion on the four
-indicators plus `age` and `diabetes`.
+The dataset has no missing values, so listwise deletion is not needed.
 
 ## 1. A naive measurement model (no covariates, no distal)
 
 ``` r
-
-pima_naive <- lapply(2:3, function(K) {
-  fit_lca(pima, continuous = pima_vars, n_classes = K,
+hs_naive <- lapply(2:3, function(K) {
+  fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10, seed = 110),
           verbose = FALSE)
 })
-names(pima_naive) <- paste0("K", 2:3)
+names(hs_naive) <- paste0("K", 2:3)
 ```
 
 ``` r
-
-compare_models(pima_naive)
+compare_models(hs_naive)
 #>    K        LL n_params      AIC      BIC     aBIC   entropy      ICL
-#> K2 2 -8778.273       29 17614.55 17747.50 17655.42 0.5391194 18210.08
-#> K3 3 -8708.250       44 17504.50 17706.23 17566.52 0.5783434 18377.00
+#> K2 2 -9951.459       29 19960.92 20096.77 20004.68 0.7791383 20341.72
+#> K3 3 -9892.962       44 19873.92 20080.05 19940.32 0.6250361 20739.15
 ```
 
-The K=2 model has the lowest BIC and the cleanest interpretation (a
-“metabolically healthier” vs. “less healthy” split). We work with it
-below.
+The K=2 model has the lowest BIC and a clean interpretation (low-marker
+vs. high-marker classes). We work with it below.
 
 ``` r
-
-plot(pima_naive$K2, type = "profiles")
+plot(hs_naive$K2, type = "profiles")
 ```
 
 ![Class-mean profiles, naive K=2.](distal-naive-profiles-1.png)
@@ -76,48 +68,44 @@ Class-mean profiles, naive K=2.
 
 ## 2. Adding a concomitant predictor
 
-The age of the respondent is plausibly antecedent to her metabolic class
-(the data come from women 21+). We let class membership depend on age
-via multinomial logistic regression.
+Age is plausibly antecedent to the marker-class status. We let class
+membership depend on age via multinomial logistic regression.
 
 ### Character-vector form
 
 The simplest specification passes a character vector of variable names:
 
 ``` r
-
-pima_concom_chr <- fit_lca(
-  pima, continuous = pima_vars, concomitant = "age",
+hs_concom_chr <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
 ```
 
 ``` r
-
-pima_concom_chr$concomitant_coefs
+hs_concom_chr$concomitant_coefs
 #>                    [,1]
-#> (Intercept) -2.60449147
-#> age          0.07736749
+#> (Intercept)  3.49083450
+#> age         -0.04707317
 ```
 
 Each column gives the log-odds (relative to class 1) for the
-corresponding non-reference class. Here the coefficient on `age` is
-positive, meaning older respondents are more likely to fall in class 2,
-consistent with metabolic markers worsening with age.
+corresponding non-reference class. The sign and magnitude depend on the
+EM’s class-label permutation; pair the coefficient with the class
+profiles to interpret it.
 
 For inference, pair the coefficients with their standard errors:
 
 ``` r
-
-se <- concomitant_se(pima_concom_chr, pima)
+se <- concomitant_se(hs_concom_chr, health_screening)
 data.frame(
-  Estimate = round(pima_concom_chr$concomitant_coefs[, 1], 4),
+  Estimate = round(hs_concom_chr$concomitant_coefs[, 1], 4),
   SE       = round(se[, 1], 4)
 )
 #>             Estimate     SE
-#> (Intercept)  -2.6045 0.3873
-#> age           0.0774 0.0120
+#> (Intercept)   3.4908 0.4555
+#> age          -0.0471 0.0093
 ```
 
 ### Formula form
@@ -130,32 +118,29 @@ anything that works in [`lm()`](https://rdrr.io/r/stats/lm.html) works
 here:
 
 ``` r
-
-pima_concom_fm <- fit_lca(
-  pima, continuous = pima_vars, concomitant = ~ age + I(age^2),
+hs_concom_fm <- fit_lca(
+  health_screening, continuous = hs_vars,
+  concomitant = ~ age + I(age^2),
   n_classes = 2,
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
 ```
 
 ``` r
-
-pima_concom_fm$concomitant_coefs
-#>                     [,1]
-#> (Intercept) -4.658603553
-#> age          0.200477683
-#> I(age^2)    -0.001704627
+hs_concom_fm$concomitant_coefs
+#>                      [,1]
+#> (Intercept)  3.524419e+00
+#> age         -4.861637e-02
+#> I(age^2)     1.659219e-05
 ```
 
-The quadratic captures whether the age effect saturates. With a single
-positive linear term and a small negative quadratic, the model says
-class-2 membership rises with age, but the marginal effect declines
-above a certain age.
+The quadratic term lets you test whether the age effect saturates. For
+these data the quadratic coefficient is effectively zero, which is
+consistent with the linear-in-age generative model.
 
 Other useful forms:
 
 ``` r
-
 # Interaction:
 fit_lca(..., concomitant = ~ age * sex)
 
@@ -175,10 +160,9 @@ input data and would invalidate any downstream distal model that expects
 per-row alignment. Impute or filter before calling:
 
 ``` r
-
-pima_na <- pima
-pima_na$age[1:3] <- NA
-fit_lca(pima_na, continuous = pima_vars, concomitant = "age",
+hs_na <- health_screening
+hs_na$age[1:3] <- NA
+fit_lca(hs_na, continuous = hs_vars, concomitant = "age",
         n_classes = 2)
 #> Error: Missing values detected in concomitant predictors.
 #> Impute or filter these rows before calling fit_lca() ...
@@ -190,31 +174,30 @@ fit_lca(pima_na, continuous = pima_vars, concomitant = "age",
 posteriors for new data using the fitted parameters. Three output types:
 
 ``` r
-
-new_rows <- pima[1:5, ]
-prob <- predict(pima_concom_chr, newdata = new_rows)          # default: matrix
-cls  <- predict(pima_concom_chr, newdata = new_rows, type = "class")
-all  <- predict(pima_concom_chr, newdata = new_rows, type = "all")
+new_rows <- health_screening[1:5, ]
+prob <- predict(hs_concom_chr, newdata = new_rows)          # default: matrix
+cls  <- predict(hs_concom_chr, newdata = new_rows, type = "class")
+all  <- predict(hs_concom_chr, newdata = new_rows, type = "all")
 
 list(prob = prob, cls = cls, all = all)
 #> $prob
-#>         P_class_1  P_class_2
-#> [1,] 2.069642e-02 0.97930358
-#> [2,] 9.622888e-01 0.03771119
-#> [3,] 4.835310e-04 0.99951647
-#> [4,] 9.821090e-01 0.01789096
-#> [5,] 1.906067e-31 1.00000000
+#>        P_class_1    P_class_2
+#> [1,] 0.008169249 9.918308e-01
+#> [2,] 0.017173642 9.828264e-01
+#> [3,] 0.008739025 9.912610e-01
+#> [4,] 0.999926641 7.335861e-05
+#> [5,] 0.006814684 9.931853e-01
 #> 
 #> $cls
-#> [1] 2 1 2 1 2
+#> [1] 2 2 2 1 2
 #> 
 #> $all
-#>      P_class_1  P_class_2 modal_class max_posterior   log_lik
-#> 1 2.069642e-02 0.97930358           2     0.9793036 -10.95667
-#> 2 9.622888e-01 0.03771119           1     0.9622888 -10.35501
-#> 3 4.835310e-04 0.99951647           2     0.9995165 -14.07066
-#> 4 9.821090e-01 0.01789096           1     0.9821090 -10.44063
-#> 5 1.906067e-31 1.00000000           2     1.0000000 -24.21890
+#>     P_class_1    P_class_2 modal_class max_posterior   log_lik
+#> 1 0.008169249 9.918308e-01           2     0.9918308 -10.31443
+#> 2 0.017173642 9.828264e-01           2     0.9828264 -12.19763
+#> 3 0.008739025 9.912610e-01           2     0.9912610 -10.62779
+#> 4 0.999926641 7.335861e-05           1     0.9999266 -13.80519
+#> 5 0.006814684 9.931853e-01           2     0.9931853 -11.86996
 ```
 
 If `newdata` has NAs in concomitant columns, the corresponding output
@@ -222,16 +205,15 @@ rows are padded with NA so the output length always equals
 `nrow(newdata)`:
 
 ``` r
-
-new_with_na <- pima[1:5, ]
+new_with_na <- health_screening[1:5, ]
 new_with_na$age[c(2, 4)] <- NA
-predict(pima_concom_chr, newdata = new_with_na)
-#>         P_class_1 P_class_2
-#> [1,] 2.069642e-02 0.9793036
-#> [2,]           NA        NA
-#> [3,] 4.835310e-04 0.9995165
-#> [4,]           NA        NA
-#> [5,] 1.906067e-31 1.0000000
+predict(hs_concom_chr, newdata = new_with_na)
+#>        P_class_1 P_class_2
+#> [1,] 0.008169249 0.9918308
+#> [2,]          NA        NA
+#> [3,] 0.008739025 0.9912610
+#> [4,]          NA        NA
+#> [5,] 0.006814684 0.9931853
 ```
 
 Rows 2 and 4 are NA, which makes `cbind(new_with_na, predict(...))`
@@ -239,7 +221,7 @@ unambiguous.
 
 ## 4. Distal outcome estimation
 
-The diabetes status is a *consequence* of metabolic class. We do **not**
+The screening outcome is a *consequence* of marker class. We do **not**
 put it in the measurement model; we estimate it separately under BCH
 weighting.
 
@@ -251,46 +233,47 @@ before the distal step, no gradient from the distal outcome can
 contaminate class meaning.
 
 ``` r
-
-pima_distal <- distal(pima_concom_chr, pima,
-                      formula = diabetes ~ age,
-                      family  = "binomial")
+hs_distal <- distal(hs_concom_chr, health_screening,
+                    formula = outcome ~ age,
+                    family  = "binomial")
 ```
 
 ``` r
-
-print(pima_distal)
+print(hs_distal)
 #> 
 #> Distal Outcome Estimation (BCH Method) - mixLCA
 #> ================================================
-#> Formula: diabetes ~ age 
+#> Formula: outcome ~ age 
 #> Family : binomial 
 #> Classes: 2 
 #> 
 #> --- Class 1 ---
-#>             Estimate       SE      z     p
-#> (Intercept) -1.39513  2.54052 -0.549 0.583
-#> age         -0.02859  0.10220 -0.280 0.780
-#>   Effective N: 373.5 
-#> 
-#> --- Class 2 ---
 #>             Estimate       SE      z      p  
-#> (Intercept)  0.85883  0.47377  1.813 0.0699 .
-#> age         -0.01126  0.01066 -1.056 0.2908  
+#> (Intercept) -1.67727  0.90877 -1.846 0.0649 .
+#> age          0.02628  0.01766  1.488 0.1367  
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-#>   Effective N: 350.5 
+#>   Effective N: 167.3 
+#> 
+#> --- Class 2 ---
+#>             Estimate      SE      z        p    
+#> (Intercept)  -3.9106  0.7234 -5.406 6.44e-08 ***
+#> age           0.0373  0.0154  2.422   0.0154 *  
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#>   Effective N: 632.7 
 #> 
 #> Classification Error Matrix:
 #>        [,1]  [,2]
-#> [1,] 0.9171 0.164
-#> [2,] 0.0829 0.836
+#> [1,] 0.8134 0.022
+#> [2,] 0.1866 0.978
 ```
 
-Reading the output: class 1 (the metabolically healthier class) has a
-negative diabetes intercept (low baseline risk); class 2 has a positive
-intercept (higher baseline risk). The `age` slope within each class is
-small. Class membership already absorbs most of the age signal.
+Reading the output: one class has a negative intercept (low baseline
+P(outcome = “yes”)), the other a less-negative or positive intercept
+(higher baseline risk). The `age` slope within each class is small and
+positive: class membership absorbs most of the age signal, with a modest
+within-class residual age effect.
 
 The **classification error matrix** at the bottom tells you how
 confident the modal assignment is. Diagonal dominance close to 1 means
@@ -304,20 +287,20 @@ supports gaussian, binomial, and poisson responses through the `family`
 argument:
 
 ``` r
-
 # Continuous distal outcome:
-distal(pima_concom_chr, pima, outcome ~ age, family = "gaussian")
+distal(hs_concom_chr, my_data, my_continuous_outcome ~ age,
+       family = "gaussian")
 
 # Count distal outcome:
-distal(pima_concom_chr, pima, n_events ~ age, family = "poisson")
+distal(hs_concom_chr, my_data, n_events ~ age, family = "poisson")
 ```
 
 The IRLS solver inside
 [`distal()`](https://asanaei.github.io/mixLCA/reference/distal.md)
 handles negative BCH weights via eigen-projection plus step-halving (a
-real divergence risk before mixLCA 1.0.1) and reports `NA` standard
+real divergence risk in earlier versions) and reports `NA` standard
 errors when the sandwich estimator goes negative (rather than the
-misleading $`p \approx 0`$ you get from forcing the variance to zero).
+misleading $p \approx 0$ you get from forcing the variance to zero).
 
 ## 5. Penalized covariance (when local dependence is continuous)
 
@@ -326,9 +309,8 @@ to `"penalized"` covariance with `glassoFast` produces exact sparsity in
 the inverse covariance matrix.
 
 ``` r
-
-pima_pen <- fit_lca(
-  pima, continuous = pima_vars, concomitant = "age",
+hs_pen <- fit_lca(
+  health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
   control = lca_control(n_starts = 10, seed = 110),
   verbose = FALSE)
@@ -338,38 +320,42 @@ The default `penalty = "auto"` selects a heuristic value from data
 scale. To request exactly no shrinkage, set `penalty = 0` explicitly.
 
 ``` r
-
-round(pima_pen$continuous_params$covariances[[1]], 4)
-#>           [,1]     [,2]    [,3]   [,4]
-#> [1,] 1005.7911 -12.1869 18.6876 0.0000
-#> [2,]  -12.1869 128.8711 16.1328 0.0000
-#> [3,]   18.6876  16.1328 51.9639 0.0000
-#> [4,]    0.0000   0.0000  0.0000 3.8543
+round(hs_pen$continuous_params$covariances[[1]], 2)
+#>        [,1]   [,2]  [,3]  [,4]
+#> [1,] 763.68   0.00  0.00  0.00
+#> [2,]   0.00 549.92  0.00  0.00
+#> [3,]   0.00   0.00 54.19  0.00
+#> [4,]   0.00   0.00  0.00 16.92
 ```
+
+On this dataset the auto-selected penalty is large enough that every
+off-diagonal element is shrunk to exactly zero, leaving a diagonal
+covariance. This is the right answer: the markers are conditionally
+independent within class by construction, so any nonzero off-diagonal
+would be over-fitting.
 
 ## 6. Putting it together
 
 A typical analysis arc:
 
 ``` r
-
 # 1. Decide K with a naive fit
 fits <- lapply(2:5, function(K)
-  fit_lca(pima, continuous = pima_vars, n_classes = K,
+  fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10, seed = 110)))
 compare_models(fits)
 
 # 2. Add concomitants
-fit <- fit_lca(pima, continuous = pima_vars,
+fit <- fit_lca(health_screening, continuous = hs_vars,
                concomitant = ~ age,
                n_classes = 2,
                control = lca_control(n_starts = 10, seed = 110))
 
 # 3. Diagnose local dependence
-bvr_tests(fit, pima)
+bvr_tests(fit, health_screening)
 
 # 4. Estimate distal under BCH
-distal(fit, pima, diabetes ~ age, family = "binomial")
+distal(fit, health_screening, outcome ~ age, family = "binomial")
 ```
 
 See
@@ -382,24 +368,20 @@ for the math.
 ## Session info
 
 ``` r
-
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
-#> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> R version 4.4.3 (2025-02-28)
+#> Platform: aarch64-apple-darwin20
+#> Running under: macOS Sequoia 15.7.4
 #> 
 #> Matrix products: default
-#> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+#> LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
 #> 
 #> locale:
-#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
-#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
-#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
-#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#> [1] C
 #> 
-#> time zone: UTC
-#> tzcode source: system (glibc)
+#> time zone: America/Chicago
+#> tzcode source: internal
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
@@ -408,15 +390,16 @@ sessionInfo()
 #> [1] mixLCA_1.0.1
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.0    
-#>  [5] tidyselect_1.2.1   Rcpp_1.1.1-1.1     jquerylib_0.1.4    systemfonts_1.3.2 
-#>  [9] scales_1.4.0       textshaping_1.0.5  yaml_2.3.12        fastmap_1.2.0     
-#> [13] ggplot2_4.0.3      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
-#> [17] knitr_1.51         tibble_3.3.1       desc_1.4.3         bslib_0.11.0      
-#> [21] pillar_1.11.1      RColorBrewer_1.1-3 rlang_1.2.0        cachem_1.1.0      
-#> [25] xfun_0.57          fs_2.1.0           sass_0.4.10        S7_0.2.2          
-#> [29] cli_3.6.6          pkgdown_2.2.0      withr_3.0.2        magrittr_2.0.5    
-#> [33] digest_0.6.39      grid_4.6.0         lifecycle_1.0.5    vctrs_0.7.3       
-#> [37] evaluate_1.0.5     glue_1.8.1         farver_2.1.2       ragg_1.5.2        
-#> [41] rmarkdown_2.31     tools_4.6.0        pkgconfig_2.0.3    htmltools_0.5.9
+#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0        compiler_4.4.3    
+#>  [5] tidyselect_1.2.1   Rcpp_1.1.0         jquerylib_0.1.4    systemfonts_1.2.3 
+#>  [9] scales_1.4.0       textshaping_1.0.1  yaml_2.3.10        fastmap_1.2.0     
+#> [13] ggplot2_4.0.2      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
+#> [17] knitr_1.51         htmlwidgets_1.6.4  tibble_3.3.0       desc_1.4.3        
+#> [21] bslib_0.9.0        pillar_1.11.0      RColorBrewer_1.1-3 rlang_1.1.7       
+#> [25] cachem_1.1.0       xfun_0.52          fs_1.6.7           sass_0.4.10       
+#> [29] S7_0.2.1           cli_3.6.5          pkgdown_2.2.0      withr_3.0.2       
+#> [33] magrittr_2.0.3     digest_0.6.37      grid_4.4.3         lifecycle_1.0.5   
+#> [37] vctrs_0.7.1        evaluate_1.0.4     glue_1.8.0         farver_2.1.2      
+#> [41] ragg_1.4.0         rmarkdown_2.30     tools_4.4.3        pkgconfig_2.0.3   
+#> [45] htmltools_0.5.8.1
 ```
