@@ -1,0 +1,60 @@
+# --------------------------------------------------------------------------
+# OS / editor metadata
+# --------------------------------------------------------------------------
+.DS_Store
+.Rhistory
+.Rapp.history
+.Rproj.user/
+*.Rproj
+.RData
+.Renviron
+*~
+*.swp
+.idea/
+.vscode/
+
+# --------------------------------------------------------------------------
+# AI tooling (never commit)
+# --------------------------------------------------------------------------
+.claude/
+.cursor/
+.aider*
+.github/copilot*
+CLAUDE.md
+claude.md
+
+# --------------------------------------------------------------------------
+# R build artefacts
+# --------------------------------------------------------------------------
+*.o
+*.so
+*.dll
+*.tar.gz
+src-i386/
+src-x64/
+
+# --------------------------------------------------------------------------
+# pkgdown / rendered output
+# --------------------------------------------------------------------------
+docs/
+vignettes/*.html
+vignettes/*.pdf
+vignettes/*.tex
+vignettes/*.log
+vignettes/*.aux
+vignettes/*.fls
+vignettes/*.fdb_latexmk
+vignettes/*-1.png
+vignettes/*-1.pdf
+vignettes/*_files/
+vignettes/*_cache/
+
+# --------------------------------------------------------------------------
+# Internal / scratch
+# --------------------------------------------------------------------------
+implementation_plan.md
+_scratch/
+_debug*.R
+_rename*.R
+_check*.R
+_clean*.R

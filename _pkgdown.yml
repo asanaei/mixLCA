@@ -1,0 +1,71 @@
+url: https://asanaei.github.io/mixLCA/
+
+template:
+  bootstrap: 5
+  bootswatch: cosmo
+
+navbar:
+  structure:
+    left:  [intro, articles, reference, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/mixLCA.html
+    articles:
+      text: Articles
+      menu:
+        - text: A workflow for LCA (naive, BVR, SLD)
+          href: articles/workflow.html
+        - text: Concomitant predictors and distal outcomes
+          href: articles/distal-covariates.html
+        - text: SLD theory and worked example
+          href: articles/sld-theory.html
+
+reference:
+  - title: Package overview
+    contents:
+      - mixLCA-package
+  - title: Fitting
+    desc: Entry points for fitting latent class models.
+    contents:
+      - fit_lca
+      - lca_control
+      - enumerate_lca
+      - auto_bvr
+      - auto_sld
+  - title: Inference
+    desc: Post-fit inference and prediction.
+    contents:
+      - predict.mixLCA
+      - distal
+      - concomitant_se
+      - continuous_se
+      - get_posteriors
+      - get_loadings
+      - coef.mixLCA
+      - logLik.mixLCA
+      - nobs.mixLCA
+      - AIC.mixLCA
+      - BIC.mixLCA
+  - title: Diagnostics
+    desc: Fit indices and bivariate residual diagnostics.
+    contents:
+      - fit_indices
+      - bvr
+      - bvr_tests
+      - bvr_categorical
+      - class_table
+      - compare_models
+      - spectral_loadings
+  - title: Visualization
+    desc: Plot method and visual diagnostics.
+    contents:
+      - plot.mixLCA
+  - title: Printing
+    contents:
+      - print.mixLCA
+      - summary.mixLCA
+
+development:
+  mode: auto

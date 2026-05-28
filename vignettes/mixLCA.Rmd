@@ -1,0 +1,120 @@
+---
+title: "Introduction to mixLCA"
+author: "Ali Sanaei"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+  rmarkdown::pdf_document:
+    toc: true
+    latex_engine: xelatex
+vignette: >
+  %\VignetteIndexEntry{Introduction to mixLCA}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+```
+
+# What `mixLCA` does
+
+`mixLCA` fits finite mixture models for latent class analysis with a
+**partitioned architecture**: concomitant predictors enter through a
+multinomial logistic regression on class membership; manifest
+indicators (continuous, categorical, or mixed) define the measurement
+model; distal outcomes are estimated *after* the measurement model
+converges, under Bollen-Croon-Hagenaars inverse-classification-error
+weighting. The partition prevents distal outcomes from leaking into
+class meaning and concomitants from contaminating the measurement
+structure.
+
+The package supports two responses to local dependence among manifest
+indicators:
+
+- **Direct effects** for categorical items (Hagenaars-Vermunt
+  specification search via `auto_bvr()`).
+- **Spectral Local Dependence (SLD)** for categorical items: a
+  low-rank decomposition of the conditional Burt matrix
+  (`auto_sld()`).
+
+For continuous indicators, the covariance structure can be fully
+unrestricted, diagonal, or sparsified via graphical lasso
+(`dependence = "penalized"`).
+
+# A minimal example
+
+```{r minimal, eval = FALSE}
+library(mixLCA)
+data("PimaIndiansDiabetes2", package = "mlbench")
+pima <- na.omit(PimaIndiansDiabetes2)
+
+fit <- fit_lca(pima,
+               continuous  = c("glucose","pressure","mass","pedigree"),
+               concomitant = ~ age,
+               n_classes   = 2,
+               control     = lca_control(n_starts = 10, seed = 110))
+
+summary(fit, data = pima)
+plot(fit, type = "profiles")
+
+distal(fit, pima, diabetes ~ age, family = "binomial")
+```
+
+# Further reading
+
+The package ships three companion vignettes:
+
+- **`vignette("workflow")`** walks through a categorical LCA from
+  scratch on the `poLCA::election` data: naive fit, BVR diagnostics,
+  `auto_bvr()` specification search, and SLD comparison. Read this
+  first if your data are categorical.
+
+- **`vignette("distal-covariates")`** covers concomitant predictors
+  (character vector vs.\ formula), the `predict()` contract with
+  `na.action`-style padding, and BCH distal estimation on the Pima
+  diabetes data.
+
+- **`vignette("sld-theory")`** explains the mathematics of Spectral
+  Local Dependence: the conditional Burt matrix, the rank-$d$
+  projector, identification, and the M-step. Read this if you want to
+  understand what SLD is doing and when it is the right tool.
+
+# Function index
+
+Core fitting:
+
+- `fit_lca()`, `lca_control()`: entry point and optimiser settings.
+- `auto_bvr()`: BVR-guided specification search.
+- `auto_sld()`: adaptive Spectral Local Dependence rank selection.
+- `enumerate_lca()`: fit a range of $K$ values.
+
+Diagnostics:
+
+- `fit_indices()`: AIC, BIC, aBIC, entropy, ICL.
+- `bvr_tests()`, `bvr_categorical()`: bivariate residual diagnostics.
+- `class_table()`: modal-class x posterior cross-tabulation.
+
+Inference:
+
+- `predict()` (S3 method): posteriors, modal class, full diagnostic
+  frame.
+- `distal()`: BCH-weighted regression for distal outcomes.
+- `concomitant_se()`, `continuous_se()`: asymptotic standard errors.
+- `get_posteriors()`, `get_loadings()`, `coef()`: accessors.
+
+Visualisation:
+
+- `plot()` (S3 method) with `type = c("profiles", "bvr", "distal",
+  "uncertainty", "convergence", "categorical", "spectral_scree",
+  "spectral_loadings")`.
+
+# Session info
+
+```{r session}
+sessionInfo()
+```

@@ -1,0 +1,45 @@
+Package: mixLCA
+Type: Package
+Title: Partitioned Latent Class Analysis with Local Dependence and Distal Outcomes
+Version: 1.0.1
+Authors@R: person("Ali Sanaei", role = c("aut", "cre"),
+                   email = "sanaei@uchicago.edu")
+Description: Finite mixture modelling with a partitioned architecture that
+    enforces temporal separation between antecedent predictors, contemporaneous
+    manifest indicators, and subsequent distal outcomes. Class membership
+    probabilities depend on concomitant predictors via multinomial logistic
+    regression. Continuous indicators follow class-specific multivariate
+    normal distributions with optional non-diagonal covariance (local
+    dependence) and L1-penalised sparsity estimation. Missing continuous
+    data is handled through analytical marginalisation. Distal outcomes are
+    estimated under BCH inverse-classification-error weighting, preventing
+    construct contamination. Provides information criteria, bivariate
+    residual diagnostics, profile plots, and network visualisations.
+License: GPL (>= 3)
+URL: https://asanaei.github.io/mixLCA/, https://github.com/asanaei/mixLCA
+BugReports: https://github.com/asanaei/mixLCA/issues
+Encoding: UTF-8
+RoxygenNote: 7.3.3
+Imports:
+    stats,
+    ggplot2 (>= 3.4.0),
+    MASS,
+    Rcpp (>= 1.0.0),
+    glassoFast,
+    numDeriv,
+    withr,
+    future.apply
+LinkingTo:
+    Rcpp,
+    RcppArmadillo
+Suggests:
+    igraph,
+    ggraph,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    future,
+    poLCA,
+    mlbench
+Config/testthat/edition: 3
+VignetteBuilder: knitr
