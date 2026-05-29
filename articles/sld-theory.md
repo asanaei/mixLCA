@@ -3,16 +3,16 @@
 ## Why a new method
 
 The local-independence assumption underwrites every classical LCA: given
-class $k$, the manifest indicators $Y_{1},\ldots,Y_{J}$ are
+class $`k`$, the manifest indicators $`Y_1, \ldots, Y_J`$ are
 statistically independent. In practice this assumption frequently fails.
 Two established responses exist.
 
 **Direct effects** (Hagenaars 1988; Vermunt 1999) add a conditional
-probability table $P\left( Y_{j} \mid Y_{j\prime},C = k \right)$ for one
-or a few item pairs $(j,j\prime)$. The remedy is targeted and cheap when
-local dependence sits in a small number of identifiable pairs, but it
-scales as $O\left( J^{2} \right)$ candidate pairs to search and produces
-dense parameter tables for any pair admitted.
+probability table $`P(Y_j \mid Y_{j'}, C = k)`$ for one or a few item
+pairs $`(j, j')`$. The remedy is targeted and cheap when local
+dependence sits in a small number of identifiable pairs, but it scales
+as $`O(J^2)`$ candidate pairs to search and produces dense parameter
+tables for any pair admitted.
 
 **Latent trait extensions** (Magidson and Vermunt’s mixed mixture
 models, Bartolucci’s hidden-Markov LCA, factor-mixture models) add a
@@ -21,7 +21,7 @@ dependence but break the discrete-class story and introduce numerical
 integration.
 
 **Spectral Local Dependence (SLD)** sits between the two. It introduces
-a rank-$d_{k}$*low-dimensional shift* to the class-conditional log
+a rank-$`d_k`$*low-dimensional shift* to the class-conditional log
 response surface. The shift is sufficient to capture broad correlated
 residuals, but it leaves the class labels discrete and the M-step
 closed-form (an eigendecomposition).
@@ -31,111 +31,132 @@ implementation in `mixLCA`, and a worked example.
 
 ## The setup
 
-Let $J$ be the number of categorical items, with item $j$ taking values
-in $\{ 1,\ldots,K_{j}\}$. Stack the **one-hot encoding** of all items
-into a single binary vector
-$$\mathbf{Z}_{i} \in \{ 0,1\}^{C},\qquad C:=\sum\limits_{j = 1}^{J}K_{j}.$$
-For each respondent $i$, exactly one entry of each item’s $K_{j}$-block
-of $\mathbf{Z}_{i}$ equals 1. Let
-${\mathbf{π}}^{(k)} \in \lbrack 0,1\rbrack^{C}$ be the class-$k$
-marginal response probabilities (the standard LCA parameters), one block
-per item summing to 1. Under local independence, the row-wise
-expectation of $\mathbf{Z}$ conditional on class $k$ is
-${\mathbf{π}}^{(k)}$ and the conditional variance has a known
-multinomial form.
+Let $`J`$ be the number of categorical items, with item $`j`$ taking
+values in $`\{1, \ldots, K_j\}`$. Stack the **one-hot encoding** of all
+items into a single binary vector
+``` math
+\mathbf{Z}_i \in \{0,1\}^C, \qquad C := \sum_{j=1}^J K_j.
+```
+For each respondent $`i`$, exactly one entry of each item’s
+$`K_j`$-block of $`\mathbf{Z}_i`$ equals 1. Let
+$`\boldsymbol{\pi}^{(k)} \in [0,1]^C`$ be the class-$`k`$ marginal
+response probabilities (the standard LCA parameters), one block per item
+summing to 1. Under local independence, the row-wise expectation of
+$`\mathbf{Z}`$ conditional on class $`k`$ is $`\boldsymbol{\pi}^{(k)}`$
+and the conditional variance has a known multinomial form.
 
 Define the **class-conditional residual**
-$$\mathbf{R}_{i}^{(k)}:=\mathbf{Z}_{i} - {\mathbf{π}}^{(k)}.$$ Its
-second moment under the class is the **conditional Burt matrix**
-$$\mathbf{\Sigma}^{(k)}:={\mathbb{E}}\!\left\lbrack \mathbf{R}^{(k)}\mathbf{R}^{{(k)}\top} \mid C = k \right\rbrack.$$
+``` math
+\mathbf{R}^{(k)}_i := \mathbf{Z}_i - \boldsymbol{\pi}^{(k)}.
+```
+Its second moment under the class is the **conditional Burt matrix**
+``` math
+\boldsymbol{\Sigma}^{(k)} :=
+  \mathbb{E}\!\left[\mathbf{R}^{(k)}\mathbf{R}^{(k)\top} \mid C = k\right].
+```
 Under local independence, the off-block-diagonal entries of
-$\mathbf{\Sigma}^{(k)}$ are zero: items are uncorrelated given class.
-Local dependence shows up as nonzero off-block-diagonal entries.
+$`\boldsymbol{\Sigma}^{(k)}`$ are zero: items are uncorrelated given
+class. Local dependence shows up as nonzero off-block-diagonal entries.
 
 ## The spectral idea
 
-If we modelled $\mathbf{\Sigma}^{(k)}$ as a *full* matrix, we would
-introduce $\left( \frac{C}{2} \right)$ free off-diagonal parameters per
-class, far more than the data support. SLD instead assumes that the
-off-diagonal covariance is *low-rank*: there exist $d_{k} \ll C$
+If we modelled $`\boldsymbol{\Sigma}^{(k)}`$ as a *full* matrix, we
+would introduce $`\binom{C}{2}`$ free off-diagonal parameters per class,
+far more than the data support. SLD instead assumes that the
+off-diagonal covariance is *low-rank*: there exist $`d_k \ll C`$
 orthonormal vectors
-$\mathbf{V}^{(k)} = \left\lbrack \mathbf{v}_{1}^{(k)},\ldots,\mathbf{v}_{d_{k}}^{(k)} \right\rbrack \in {\mathbb{R}}^{C \times d_{k}}$
-such that
-$$\mathbf{\Sigma}^{(k)} \approx \mathbf{V}^{(k)}\mathbf{\Lambda}^{(k)}\mathbf{V}^{{(k)}\top}$$
+$`\mathbf{V}^{(k)} = [\mathbf{v}^{(k)}_1, \ldots, \mathbf{v}^{(k)}_{d_k}]
+\in \mathbb{R}^{C \times d_k}`$ such that
+``` math
+\boldsymbol{\Sigma}^{(k)} \approx
+  \mathbf{V}^{(k)} \boldsymbol{\Lambda}^{(k)} \mathbf{V}^{(k)\top}
+```
 where
-$\mathbf{\Lambda}^{(k)} = {diag}\left( \lambda_{1}^{(k)},\ldots,\lambda_{d_{k}}^{(k)} \right)$
-collects the top $d_{k}$ eigenvalues of $\mathbf{\Sigma}^{(k)}$.
+$`\boldsymbol{\Lambda}^{(k)} = \mathrm{diag}(\lambda_1^{(k)}, \ldots,
+\lambda_{d_k}^{(k)})`$ collects the top $`d_k`$ eigenvalues of
+$`\boldsymbol{\Sigma}^{(k)}`$.
 
 In words: each class has its own dominant directions of residual
-covariance, and we model only those. The columns of $\mathbf{V}^{(k)}$
+covariance, and we model only those. The columns of $`\mathbf{V}^{(k)}`$
 are *spectral loadings*: they tell you which item categories drift
 together when conditional independence fails.
 
 ## The shifted log-likelihood
 
-We do not parameterize $\mathbf{\Sigma}^{(k)}$ directly. Instead we
-modify the class-$k$ log-density. Let
-${\mathbf{η}}_{i}^{(k)}:=\log{\mathbf{π}}^{(k)}$ be the
+We do not parameterize $`\boldsymbol{\Sigma}^{(k)}`$ directly. Instead
+we modify the class-$`k`$ log-density. Let
+$`\boldsymbol{\eta}^{(k)}_i := \log \boldsymbol{\pi}^{(k)}`$ be the
 local-independence log-probability vector. SLD adds a **hollow
 projection** to that vector:
-$${\mathbf{η}}_{i}^{(k)}:=\log{\mathbf{π}}^{(k)} + \mathbf{A}^{\star {(k)}}\mathbf{R}_{i}^{(k)},\qquad\mathbf{A}^{\star {(k)}}:=\mathbf{M} \odot \left( \mathbf{V}^{(k)}\mathbf{V}^{{(k)}\top} \right),$$
-where $\mathbf{M}$ is a $C \times C$ “hollow” mask (1
+``` math
+\boldsymbol{\eta}^{(k)}_i := \log \boldsymbol{\pi}^{(k)}
+  + \mathbf{A}^{\star (k)} \mathbf{R}^{(k)}_i,
+\qquad
+\mathbf{A}^{\star (k)} := \mathbf{M} \odot \left(
+  \mathbf{V}^{(k)} \mathbf{V}^{(k)\top}
+\right),
+```
+where $`\mathbf{M}`$ is a $`C \times C`$ “hollow” mask (1
 off-block-diagonal, 0 on-block-diagonal) that prevents the projection
 from touching the *within-item* part of the parameters. The within-item
-part is already parameterized by ${\mathbf{π}}^{(k)}$ and
+part is already parameterized by $`\boldsymbol{\pi}^{(k)}`$ and
 double-counting it would break identification.
 
 The log-density per item block is then a softmax of the shifted
-${\mathbf{η}}_{i}^{(k)}$ restricted to that item’s columns. The
+$`\boldsymbol{\eta}^{(k)}_i`$ restricted to that item’s columns. The
 composite log-likelihood is the sum across blocks.
 
-Note: $\mathbf{A}^{\star {(k)}}$ is symmetric and rank-$d_{k}$ (before
+Note: $`\mathbf{A}^{\star (k)}`$ is symmetric and rank-$`d_k`$ (before
 masking; the mask preserves the rank up to numerical tolerance). The
-identification of $\mathbf{V}^{(k)}$ is up to orthogonal rotation within
-its column span, the same indeterminacy as in factor analysis or
+identification of $`\mathbf{V}^{(k)}`$ is up to orthogonal rotation
+within its column span, the same indeterminacy as in factor analysis or
 correspondence analysis.
 
 ## Estimation
 
 EM with one twist:
 
-**E-step**. Compute posteriors
-$\gamma_{ik} \propto \pi_{k} \cdot {softmax}_{J}\left( {\mathbf{η}}_{i}^{(k)} \right)$,
-as usual.
+**E-step**. Compute posteriors $`\gamma_{ik} \propto \pi_k \cdot
+\mathrm{softmax}_J(\boldsymbol{\eta}^{(k)}_i)`$, as usual.
 
-**M-step**. For each class $k$:
+**M-step**. For each class $`k`$:
 
-1.  Update marginal response probabilities ${\mathbf{π}}^{(k)}$ from the
-    weighted posterior counts (standard LCA M-step).
+1.  Update marginal response probabilities $`\boldsymbol{\pi}^{(k)}`$
+    from the weighted posterior counts (standard LCA M-step).
 2.  Form the weighted conditional residual covariance
-    $${\widehat{\mathbf{\Sigma}}}^{(k)} = \frac{1}{\sum\limits_{i}\gamma_{ik}}\sum\limits_{i}\gamma_{ik}\,\mathbf{R}_{i}^{(k)}\mathbf{R}_{i}^{{(k)}\top},$$
-    where $\mathbf{R}_{i}^{(k)} = \mathbf{Z}_{i} - {\mathbf{π}}^{(k)}$.
+    ``` math
+    \widehat{\boldsymbol{\Sigma}}^{(k)} =
+      \frac{1}{\sum_i \gamma_{ik}}
+      \sum_i \gamma_{ik} \, \mathbf{R}^{(k)}_i \mathbf{R}^{(k)\top}_i,
+    ```
+    where
+    $`\mathbf{R}^{(k)}_i = \mathbf{Z}_i - \boldsymbol{\pi}^{(k)}`$.
 3.  Compute the eigendecomposition of
-    $\mathbf{M} \odot {\widehat{\mathbf{\Sigma}}}^{(k)}$, keep the top
-    $d_{k}$ eigenvectors, and form
-    $\mathbf{A}^{\star {(k)}} = \mathbf{M} \odot \mathbf{V}^{(k)}\mathbf{V}^{{(k)}\top}$.
-4.  Use this $\mathbf{A}^{\star {(k)}}$ to construct the shifted
+    $`\mathbf{M} \odot \widehat{\boldsymbol{\Sigma}}^{(k)}`$, keep the
+    top $`d_k`$ eigenvectors, and form
+    $`\mathbf{A}^{\star (k)} = \mathbf{M} \odot
+    \mathbf{V}^{(k)} \mathbf{V}^{(k)\top}`$.
+4.  Use this $`\mathbf{A}^{\star (k)}`$ to construct the shifted
     log-density for the next E-step.
 
 The M-step is closed-form (an eigendecomposition), so the per-iteration
-cost is $O\left( K \cdot C^{3} \right)$, dominated by
-eigendecomposition, but with $C$ rarely exceeding a few dozen this is
-cheap.
+cost is $`O(K \cdot C^3)`$, dominated by eigendecomposition, but with
+$`C`$ rarely exceeding a few dozen this is cheap.
 
 EM monotonicity for this scheme rests on a generalized M-step argument:
-the eigendecomposition selects the best rank-$d_{k}$ projection in
-Frobenius norm, which is also the rank-$d_{k}$ projection that maximises
+the eigendecomposition selects the best rank-$`d_k`$ projection in
+Frobenius norm, which is also the rank-$`d_k`$ projection that maximises
 the Q-function locally. `mixLCA` adds a step-halving safeguard in
 [R/04_em_engine.R](https://asanaei.github.io/mixLCA/R/04_em_engine.R)
 that backs off if a candidate update fails to non-decrease the observed
 log-likelihood; in practice the safeguard fires rarely.
 
-## Choosing the ranks $d_{1},\ldots,d_{K}$
+## Choosing the ranks $`d_1, \ldots, d_K`$
 
 Three strategies.
 
 **Fixed rank.** Pass `spectral_rank = 2L` (scalar, same rank for all
-classes) or `spectral_rank = c(1L, 2L, 0L)` (length-$K$ vector).
+classes) or `spectral_rank = c(1L, 2L, 0L)` (length-$`K`$ vector).
 
 **Pooled basis.** Set `spectral_pool = TRUE` to estimate a single
 spectral basis from the class-weighted average of conditional Burt
@@ -155,16 +176,17 @@ class-specific ranks matched to the data’s actual residual structure.
 
 A few points worth flagging.
 
-- The marginal probability vector ${\mathbf{π}}^{(k)}$ is the standard
-  LCA parameter; identification of these probabilities relies on the
-  same conditions as classical LCA (sufficient items, sufficient class
-  separation).
-- The rank-$d_{k}$ projection $\mathbf{A}^{\star {(k)}}$ is identified
+- The marginal probability vector $`\boldsymbol{\pi}^{(k)}`$ is the
+  standard LCA parameter; identification of these probabilities relies
+  on the same conditions as classical LCA (sufficient items, sufficient
+  class separation).
+- The rank-$`d_k`$ projection $`\mathbf{A}^{\star (k)}`$ is identified
   up to orthogonal rotation within its column span, exactly as in PCA,
   factor analysis, or multiple correspondence analysis.
-- The hollow mask $\mathbf{M}$ is essential. Without it the spectral
-  shift would absorb information already encoded in ${\mathbf{π}}^{(k)}$
-  (the within-item probabilities), producing a non-identified surplus.
+- The hollow mask $`\mathbf{M}`$ is essential. Without it the spectral
+  shift would absorb information already encoded in
+  $`\boldsymbol{\pi}^{(k)}`$ (the within-item probabilities), producing
+  a non-identified surplus.
 - Because the M-step is composite (we maximise the sum of marginal item
   softmaxes, not the full multinomial joint), BIC computed in the usual
   way is *naive*: it under-penalises the composite likelihood. For rank
@@ -183,14 +205,15 @@ individually large. That is the typical case when local dependence is
 broad. Below is a smaller synthetic example that makes the comparison
 even sharper.
 
-We generate $N = 500$ observations from two classes, each with 8 binary
-items. In class 1, items 1-4 are positively correlated via a shared
-latent factor; in class 2 items 5-8 are positively correlated via a
-different shared factor. Direct effects would need to enumerate
-$\left( \frac{4}{2} \right) \cdot 2 = 12$ pairs to absorb this
-structure; SLD captures it with two rank-1 projections.
+We generate $`N = 500`$ observations from two classes, each with 8
+binary items. In class 1, items 1-4 are positively correlated via a
+shared latent factor; in class 2 items 5-8 are positively correlated via
+a different shared factor. Direct effects would need to enumerate
+$`\binom{4}{2} \cdot 2 = 12`$ pairs to absorb this structure; SLD
+captures it with two rank-1 projections.
 
 ``` r
+
 sim_one_class <- function(n, p_base, latent_loading) {
   # latent ~ N(0,1); item j response is 1 with prob expit(logit(p_base[j]) + latent_loading[j] * latent)
   L <- rnorm(n)
@@ -225,6 +248,7 @@ str(df_sim)
 ```
 
 ``` r
+
 # Naive K=2
 fit_naive_sim <- fit_lca(df_sim,
                          categorical = names(df_sim),
@@ -254,7 +278,7 @@ data.frame(
 
 The SLD model captures the within-class correlation with one rank per
 class and gains BIC despite the extra parameters (naive BIC
-$\approx 5350$ vs. SLD BIC $\approx 5188$, a savings of about 160
+$`\approx 5350`$ vs. SLD BIC $`\approx 5188`$, a savings of about 160
 points). Inspecting the loadings shows the rank-1 direction in class 1
 as a bipolar contrast: items Q1-Q4 (the items whose latent factor was
 active in class 1) load with one sign, items Q5-Q8 load with the
@@ -262,6 +286,7 @@ opposite sign. The single dimension thereby encodes the covariance
 pattern induced by the shared latent factor:
 
 ``` r
+
 get_loadings(fit_sld_sim)[
   get_loadings(fit_sld_sim)$class == "Class 1" &
     get_loadings(fit_sld_sim)$dimension == 1, ]
@@ -270,8 +295,8 @@ get_loadings(fit_sld_sim)[
 #> 2  Class 1         1   Q1      yes -0.21629277
 #> 3  Class 1         1   Q2       no  0.33012727
 #> 4  Class 1         1   Q2      yes -0.33012727
-#> 5  Class 1         1   Q3       no  0.24362195
-#> 6  Class 1         1   Q3      yes -0.24362195
+#> 5  Class 1         1   Q3       no  0.24362194
+#> 6  Class 1         1   Q3      yes -0.24362194
 #> 7  Class 1         1   Q4       no  0.24315168
 #> 8  Class 1         1   Q4      yes -0.24315168
 #> 9  Class 1         1   Q5       no -0.02299066
@@ -280,8 +305,8 @@ get_loadings(fit_sld_sim)[
 #> 12 Class 1         1   Q6      yes  0.28537661
 #> 13 Class 1         1   Q7       no -0.30480933
 #> 14 Class 1         1   Q7      yes  0.30480933
-#> 15 Class 1         1   Q8       no -0.22557022
-#> 16 Class 1         1   Q8      yes  0.22557022
+#> 15 Class 1         1   Q8       no -0.22557023
+#> 16 Class 1         1   Q8      yes  0.22557023
 ```
 
 ## When SLD does **not** win
@@ -293,11 +318,11 @@ effects beat SLD because they spend parameters only on the pairs that
 need them; SLD has to allocate non-zero coefficients to every pair that
 the latent direction projects onto.
 
-**Sample size per class is small** relative to $C$. The conditional Burt
-matrix is a $C \times C$ covariance estimate; estimating its top-$d_{k}$
-eigendecomposition requires enough class-weighted observations to
-stabilise the eigenvectors. As a rough rule:
-$N_{k} \gtrsim 10 \cdot C/K$.
+**Sample size per class is small** relative to $`C`$. The conditional
+Burt matrix is a $`C \times C`$ covariance estimate; estimating its
+top-$`d_k`$ eigendecomposition requires enough class-weighted
+observations to stabilise the eigenvectors. As a rough rule:
+$`N_k \gtrsim 10 \cdot C / K`$.
 
 In either case
 [`auto_sld()`](https://asanaei.github.io/mixLCA/reference/auto_sld.md)
@@ -329,18 +354,24 @@ precise.
 ### What LCFA is
 
 LCFA, introduced by Magidson and Vermunt (2001) and developed in their
-Latent GOLD software, replaces the single $K$-level categorical latent
-variable of ordinary LCA with $F$ binary (or low-ordinal) latent factors
-$\xi_{1},\ldots,\xi_{F}$. The joint manifest distribution is
-$$P\left( Y_{1},\ldots,Y_{J} \right) = \sum\limits_{{\mathbf{ξ}} \in \{ 0,1\}^{F}}P({\mathbf{ξ}})\,\prod\limits_{j = 1}^{J}P\left( Y_{j} \mid {\mathbf{ξ}} \right),$$
+Latent GOLD software, replaces the single $`K`$-level categorical latent
+variable of ordinary LCA with $`F`$ binary (or low-ordinal) latent
+factors $`\xi_1, \ldots, \xi_F`$. The joint manifest distribution is
+``` math
+P(Y_1, \ldots, Y_J) = \sum_{\boldsymbol{\xi} \in \{0,1\}^F}
+  P(\boldsymbol{\xi})\, \prod_{j=1}^J P(Y_j \mid \boldsymbol{\xi}),
+```
 with the class-conditional response usually parameterized as a logistic
-main-effects model in $\mathbf{ξ}$:
-$${logit}\, P\left( Y_{j} = 1 \mid {\mathbf{ξ}} \right) = \alpha_{j} + \sum\limits_{f = 1}^{F}\beta_{jf}\xi_{f}.$$
-Mathematically this is an ordinary LCA with $K = 2^{F}$ classes plus a
+main-effects model in $`\boldsymbol{\xi}`$:
+``` math
+\mathrm{logit}\, P(Y_j = 1 \mid \boldsymbol{\xi})
+  = \alpha_j + \sum_{f=1}^F \beta_{jf} \xi_f.
+```
+Mathematically this is an ordinary LCA with $`K = 2^F`$ classes plus a
 log-linear restriction that forbids the higher-order interactions among
-the $\xi_{f}$. You can read LCFA in any of three ways:
+the $`\xi_f`$. You can read LCFA in any of three ways:
 
-1.  As a $K = 2^{F}$ class LCA with a “main effects only” constraint on
+1.  As a $`K = 2^F`$ class LCA with a “main effects only” constraint on
     the class-conditional probabilities.
 2.  As a discrete, low-resolution version of a multi-trait 2PL IRT
     model.
@@ -349,8 +380,8 @@ the $\xi_{f}$. You can read LCFA in any of three ways:
 
 ### What SLD is, in one sentence
 
-SLD keeps the single $K$-level latent class fixed and adds a
-rank-$d_{k}$*within-class* low-rank shift to the log response surface,
+SLD keeps the single $`K`$-level latent class fixed and adds a
+rank-$`d_k`$*within-class* low-rank shift to the log response surface,
 leaving class identity unchanged.
 
 ### The substantive distinction
@@ -358,10 +389,10 @@ leaving class identity unchanged.
 The two models answer different questions about the underlying
 construct:
 
-| Question                                                                                                                                           | Use      |
-|----------------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| “Is the underlying construct one typology with $K$ kinds of people, but the items have shared variance we want to absorb so the kinds stay crisp?” | **SLD**  |
-| “Is the underlying construct multidimensional and discrete-typological, so each respondent is positioned on $F$ binary axes simultaneously?”       | **LCFA** |
+| Question | Use |
+|----|----|
+| “Is the underlying construct one typology with $`K`$ kinds of people, but the items have shared variance we want to absorb so the kinds stay crisp?” | **SLD** |
+| “Is the underlying construct multidimensional and discrete-typological, so each respondent is positioned on $`F`$ binary axes simultaneously?” | **LCFA** |
 
 If you commit to LCFA, you accept that “class” is no longer a single
 label but a coordinate in a factor-product space. If you commit to SLD,
@@ -370,18 +401,18 @@ themselves are still the substantive output.
 
 ### The mathematical distinction
 
-|                       | LCFA                                                                                            | SLD                                                                                           |
-|-----------------------|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| Latent space          | $\{ 0,1\}^{F}$ (Cartesian product of binary factors)                                            | $\{ 1,\ldots,K\}$ (categorical)                                                               |
-| Effect on class count | Implicit: $K = 2^{F}$                                                                           | Explicit: chosen by user                                                                      |
-| Parameter pattern     | Restricts a $2^{F}$-class LCA via log-linear main-effects constraints on response probabilities | Augments a $K$-class LCA via a class-wise rank-$d_{k}$ projection of the residual Burt matrix |
-| Identification logic  | Main-effects-only constraint forbids high-order interaction in class-conditional probabilities  | Hollow-mask constraint forbids the projection from touching within-item probabilities         |
-| What is preserved     | The factor-additive structure of the latent space                                               | The discrete class labels                                                                     |
-| Computational style   | Constrained EM or quasi-Newton on the loadings                                                  | Closed-form M-step via eigendecomposition of the conditional Burt matrix                      |
+|  | LCFA | SLD |
+|----|----|----|
+| Latent space | $`\{0,1\}^F`$ (Cartesian product of binary factors) | $`\{1, \ldots, K\}`$ (categorical) |
+| Effect on class count | Implicit: $`K = 2^F`$ | Explicit: chosen by user |
+| Parameter pattern | Restricts a $`2^F`$-class LCA via log-linear main-effects constraints on response probabilities | Augments a $`K`$-class LCA via a class-wise rank-$`d_k`$ projection of the residual Burt matrix |
+| Identification logic | Main-effects-only constraint forbids high-order interaction in class-conditional probabilities | Hollow-mask constraint forbids the projection from touching within-item probabilities |
+| What is preserved | The factor-additive structure of the latent space | The discrete class labels |
+| Computational style | Constrained EM or quasi-Newton on the loadings | Closed-form M-step via eigendecomposition of the conditional Burt matrix |
 
-Neither is a special case of the other. LCFA with $F = 1$ gives back a
+Neither is a special case of the other. LCFA with $`F = 1`$ gives back a
 two-class LCA with no extra structure (no useful SLD analog). SLD with
-$d_{k} = 0$ for all $k$ gives back ordinary $K$-class LCA (no useful
+$`d_k = 0`$ for all $`k`$ gives back ordinary $`K`$-class LCA (no useful
 LCFA analog).
 
 ### When each shines
@@ -389,13 +420,13 @@ LCFA analog).
 **LCFA wins when** the substantively-correct construct is
 multidimensional and typological at the same time. Classic examples:
 personality structure where two or three binary “trait” dimensions
-generate respondent positions. The interpretation $\xi_{f} \in \{ 0,1\}$
+generate respondent positions. The interpretation $`\xi_f \in \{0, 1\}`$
 is itself the scientific claim.
 
 **SLD wins when** the substantively-correct construct is *single*-class
-$K$-categorical, but the items measuring it have shared variance (common
-method bias, item-cluster effects, a halo around one stimulus,
-partisanship spilling into all ratings of one candidate). The $K$
+$`K`$-categorical, but the items measuring it have shared variance
+(common method bias, item-cluster effects, a halo around one stimulus,
+partisanship spilling into all ratings of one candidate). The $`K`$
 classes are what you want to report; the shared variance is a nuisance,
 and SLD absorbs it without altering the class story.
 
@@ -434,20 +465,24 @@ will be updated with a citation once it is available.
 ## Session info
 
 ``` r
+
 sessionInfo()
-#> R version 4.4.3 (2025-02-28)
-#> Platform: aarch64-apple-darwin20
-#> Running under: macOS Sequoia 15.7.4
+#> R version 4.6.0 (2026-04-24)
+#> Platform: x86_64-pc-linux-gnu
+#> Running under: Ubuntu 24.04.4 LTS
 #> 
 #> Matrix products: default
-#> BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
-#> LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+#> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
 #> 
 #> locale:
-#> [1] C
+#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
 #> 
-#> time zone: America/Chicago
-#> tzcode source: internal
+#> time zone: UTC
+#> tzcode source: system (glibc)
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
@@ -457,20 +492,20 @@ sessionInfo()
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] gtable_0.3.6        future.apply_1.20.2 jsonlite_2.0.0     
-#>  [4] dplyr_1.2.0         compiler_4.4.3      tidyselect_1.2.1   
-#>  [7] Rcpp_1.1.0          parallel_4.4.3      jquerylib_0.1.4    
-#> [10] globals_0.18.0      systemfonts_1.2.3   scales_1.4.0       
-#> [13] textshaping_1.0.1   yaml_2.3.10         fastmap_1.2.0      
-#> [16] ggplot2_4.0.2       R6_2.6.1            generics_0.1.4     
-#> [19] knitr_1.51          htmlwidgets_1.6.4   tibble_3.3.0       
-#> [22] desc_1.4.3          bslib_0.9.0         pillar_1.11.0      
-#> [25] RColorBrewer_1.1-3  rlang_1.1.7         cachem_1.1.0       
-#> [28] xfun_0.52           fs_1.6.7            sass_0.4.10        
-#> [31] S7_0.2.1            cli_3.6.5           pkgdown_2.2.0      
-#> [34] withr_3.0.2         magrittr_2.0.3      digest_0.6.37      
-#> [37] grid_4.4.3          lifecycle_1.0.5     vctrs_0.7.1        
-#> [40] evaluate_1.0.4      glue_1.8.0          listenv_0.9.1      
-#> [43] farver_2.1.2        codetools_0.2-20    ragg_1.4.0         
-#> [46] parallelly_1.45.1   rmarkdown_2.30      tools_4.4.3        
-#> [49] pkgconfig_2.0.3     htmltools_0.5.8.1
+#>  [4] dplyr_1.2.1         compiler_4.6.0      tidyselect_1.2.1   
+#>  [7] Rcpp_1.1.1-1.1      parallel_4.6.0      jquerylib_0.1.4    
+#> [10] globals_0.19.1      systemfonts_1.3.2   scales_1.4.0       
+#> [13] textshaping_1.0.5   yaml_2.3.12         fastmap_1.2.0      
+#> [16] ggplot2_4.0.3       R6_2.6.1            generics_0.1.4     
+#> [19] knitr_1.51          tibble_3.3.1        desc_1.4.3         
+#> [22] bslib_0.11.0        pillar_1.11.1       RColorBrewer_1.1-3 
+#> [25] rlang_1.2.0         cachem_1.1.0        xfun_0.57          
+#> [28] fs_2.1.0            sass_0.4.10         S7_0.2.2           
+#> [31] cli_3.6.6           pkgdown_2.2.0       withr_3.0.2        
+#> [34] magrittr_2.0.5      digest_0.6.39       grid_4.6.0         
+#> [37] lifecycle_1.0.5     vctrs_0.7.3         evaluate_1.0.5     
+#> [40] glue_1.8.1          listenv_0.10.1      farver_2.1.2       
+#> [43] codetools_0.2-20    ragg_1.5.2          parallelly_1.47.0  
+#> [46] rmarkdown_2.31      tools_4.6.0         pkgconfig_2.0.3    
+#> [49] htmltools_0.5.9
 ```

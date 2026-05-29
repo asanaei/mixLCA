@@ -39,7 +39,7 @@ fit <- fit_lca(health_screening,
 se <- concomitant_se(fit, health_screening)
 round(cbind(Estimate = fit$concomitant_coefs[, 1], SE = se[, 1]), 4)
 #>             Estimate     SE
-#> (Intercept)   3.4908 0.4555
-#> age          -0.0471 0.0093
+#> (Intercept)  -3.4908 0.4555
+#> age           0.0471 0.0093
 # }
 ```
