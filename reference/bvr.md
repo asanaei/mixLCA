@@ -33,7 +33,7 @@ data(health_screening)
 fit <- fit_lca(health_screening,
                continuous = c("marker_1","marker_2","marker_3","marker_4"),
                n_classes  = 2,
-               control    = lca_control(n_starts = 2, seed = 110),
+               control    = lca_control(n_starts = 2),
                verbose    = FALSE)
 round(bvr(fit, health_screening), 3)
 #>          marker_1 marker_2 marker_3 marker_4

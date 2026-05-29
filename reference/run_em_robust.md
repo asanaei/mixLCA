@@ -1,11 +1,12 @@
 # Multi-Start EM Estimation for mixLCA
 
-Runs the EM algorithm from multiple random starting points (each seeded
-deterministically from `base_seed + s`) and returns the solution with
-the highest terminal log-likelihood. Parallel execution is delegated to
-the user's active
+Runs the EM algorithm from multiple random starting points and returns
+the solution with the highest terminal log-likelihood. Parallel
+execution is delegated to the user's active
 [`future::plan()`](https://future.futureverse.org/reference/plan.html);
 this function never alters the global plan or the global random seed.
+Reproducibility is the caller's job
+([`set.seed()`](https://rdrr.io/r/base/Random.html) before calling).
 
 ## Usage
 
@@ -21,7 +22,6 @@ run_em_robust(
   max_iter = 500L,
   tol = 1e-06,
   n_starts = 1L,
-  base_seed = 110L,
   verbose = TRUE,
   cat_direct_effects = NULL,
   spectral_rank = 0L,
@@ -72,10 +72,6 @@ run_em_robust(
 - n_starts:
 
   Number of random starting configurations.
-
-- base_seed:
-
-  Base random seed.
 
 - verbose:
 

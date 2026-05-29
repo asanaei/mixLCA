@@ -7,13 +7,7 @@ Defaults reproduce the behaviour of prior beta releases.
 ## Usage
 
 ``` r
-lca_control(
-  max_iter = 500L,
-  tol = 1e-06,
-  n_starts = 1L,
-  seed = 110L,
-  kmeans_nstart = 1L
-)
+lca_control(max_iter = 500L, tol = 1e-06, n_starts = 1L, kmeans_nstart = 1L)
 ```
 
 ## Arguments
@@ -31,11 +25,6 @@ lca_control(
   Integer: number of random starting points. For publication-quality
   results consider at least 10.
 
-- seed:
-
-  Base random seed; start *s* uses `seed + s`. The global `.Random.seed`
-  is never modified.
-
 - kmeans_nstart:
 
   Integer: random initializations for the internal `kmeans` used to seed
@@ -45,6 +34,16 @@ lca_control(
 ## Value
 
 A list of control values.
+
+## Reproducibility
+
+[`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md)
+draws from the global RNG state for random initialisation, exactly like
+[`stats::kmeans()`](https://rdrr.io/r/stats/kmeans.html) and
+[`uwot::umap()`](https://jlmelville.github.io/uwot/reference/umap.html).
+To get a reproducible fit, call
+[`set.seed()`](https://rdrr.io/r/base/Random.html) before
+[`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md).
 
 ## Examples
 
@@ -60,16 +59,12 @@ lca_control()
 #> $n_starts
 #> [1] 1
 #> 
-#> $seed
-#> [1] 110
-#> 
 #> $kmeans_nstart
 #> [1] 1
 #> 
 
-# Tighter tolerance, more random starts, deterministic seed
-lca_control(max_iter = 1000L, tol = 1e-8,
-            n_starts = 10L, seed = 110L)
+# Tighter tolerance, more random starts
+lca_control(max_iter = 1000L, tol = 1e-8, n_starts = 10L)
 #> $max_iter
 #> [1] 1000
 #> 
@@ -79,10 +74,11 @@ lca_control(max_iter = 1000L, tol = 1e-8,
 #> $n_starts
 #> [1] 10
 #> 
-#> $seed
-#> [1] 110
-#> 
 #> $kmeans_nstart
 #> [1] 1
 #> 
+
+# Reproducible fit: set seed at the call site, like with kmeans
+set.seed(110)
+# then call fit_lca(..., control = lca_control(n_starts = 10L))
 ```

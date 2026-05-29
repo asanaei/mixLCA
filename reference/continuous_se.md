@@ -39,11 +39,11 @@ data(health_screening)
 fit <- fit_lca(health_screening,
                continuous = c("marker_1","marker_2","marker_3","marker_4"),
                n_classes  = 2,
-               control    = lca_control(n_starts = 3, seed = 110),
+               control    = lca_control(n_starts = 3),
                verbose    = FALSE)
 ses <- continuous_se(fit, health_screening)
 round(ses$mean_se[[1]], 4)   # SE of class-1 means
 #> marker_1 marker_2 marker_3 marker_4 
-#>   1.2427   1.0594   0.2444   0.0045 
+#>   4.5827   3.1083   0.7479   0.0194 
 # }
 ```

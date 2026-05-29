@@ -57,7 +57,7 @@ concomitant predictors (here `age`) enter the measurement model through
 multinomial logistic regression on class membership, while the distal
 outcome (`outcome`) is estimated separately via
 [`distal`](https://asanaei.github.io/mixLCA/reference/distal.md) under
-Bollen-Croon-Hagenaars (BCH) inverse- classification-error weighting.
+Bolck-Croon-Hagenaars (BCH) inverse- classification-error weighting.
 
 The data are synthetic, authored by the package author for didactic
 purposes, and are licensed under GPL (\>= 3) along with the rest of the

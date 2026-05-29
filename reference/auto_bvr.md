@@ -29,7 +29,6 @@ auto_bvr(
   K_range = 2:5,
   max_direct_effects = 5L,
   bvr_threshold = 3.84,
-  seed = 110L,
   verbose = TRUE,
   ...
 )
@@ -67,10 +66,6 @@ auto_bvr(
   Numeric: minimum BVR chi-squared statistic to consider a direct effect
   (default 3.84, i.e. p \< .05 for df = 1).
 
-- seed:
-
-  Random seed.
-
 - verbose:
 
   Logical: print progress?
@@ -95,13 +90,13 @@ Parallel execution of multiple starts is delegated to the user's active
 
 ``` r
 if (FALSE) { # \dontrun{
+set.seed(110)
 data(voter_perceptions)
 fit <- auto_bvr(
   data        = voter_perceptions,
   categorical = names(voter_perceptions),
   K_range     = 3,
   max_direct_effects = 4L,
-  seed        = 110L,
   n_starts    = 3,
   verbose     = FALSE)
 fit$auto_path$direct_effects

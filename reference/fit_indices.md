@@ -27,7 +27,7 @@ data(voter_perceptions)
 fit <- fit_lca(voter_perceptions,
                categorical = names(voter_perceptions),
                n_classes   = 3,
-               control     = lca_control(n_starts = 2, seed = 110),
+               control     = lca_control(n_starts = 2),
                verbose     = FALSE)
 fi <- fit_indices(fit)
 fi[c("log_lik", "n_params", "AIC", "BIC", "aBIC", "entropy", "ICL")]
@@ -47,7 +47,7 @@ fi[c("log_lik", "n_params", "AIC", "BIC", "aBIC", "entropy", "ICL")]
 #> [1] 60906.89
 #> 
 #> $entropy
-#> [1] 0.8210248
+#> [1] 0.8210241
 #> 
 #> $ICL
 #> [1] 62042.86

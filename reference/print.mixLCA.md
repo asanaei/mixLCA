@@ -19,6 +19,10 @@ print(x, ...)
 
   Unused.
 
+## Value
+
+Invisibly returns `x`.
+
 ## Examples
 
 ``` r
@@ -27,7 +31,7 @@ data(voter_perceptions)
 fit <- fit_lca(voter_perceptions,
                categorical = names(voter_perceptions),
                n_classes   = 2,
-               control     = lca_control(n_starts = 2, seed = 110),
+               control     = lca_control(n_starts = 2),
                verbose     = FALSE)
 print(fit)
 #> 
@@ -37,7 +41,7 @@ print(fit)
 #> Log-likelihood       : -30684.79 
 #> Parameters     : 73 
 #> Observations   : 2000 
-#> Converged      : TRUE (28 iterations) 
+#> Converged      : TRUE (24 iterations) 
 #> 
 #> Specification:
 #>   Categorical indicators: 12 

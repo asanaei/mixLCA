@@ -115,8 +115,59 @@ fit_lca(
 
 ## Value
 
-An opaque object of class `mixLCA`. Use the provided accessors and S3
-methods ([`coef()`](https://rdrr.io/r/stats/coef.html),
+An object of class `mixLCA` (a list) containing:
+
+- n_classes:
+
+  The number of latent classes.
+
+- log_lik:
+
+  The maximised log-likelihood at the final EM iterate.
+
+- posteriors:
+
+  An N x K matrix of posterior class probabilities.
+
+- continuous_params:
+
+  List of class-specific means and covariances (when continuous
+  indicators are used).
+
+- categorical_params:
+
+  List of class-specific category probabilities (when categorical
+  indicators are used).
+
+- cat_spectral_params:
+
+  List of class-specific Spectral Local Dependence parameters (when
+  `spectral_rank > 0`).
+
+- concomitant_coefs:
+
+  Matrix of multinomial logistic regression coefficients (when
+  concomitant predictors are supplied).
+
+- n_obs:
+
+  Number of observations used in estimation.
+
+- convergence:
+
+  List detailing EM convergence status and history.
+
+- specs:
+
+  List of model specifications (indicator types, dependence structure,
+  etc.).
+
+- AIC, BIC, aBIC, ICL, entropy:
+
+  Cached fit indices.
+
+Treat the return as opaque: use the provided accessors and S3 methods
+([`coef()`](https://rdrr.io/r/stats/coef.html),
 [`predict()`](https://rdrr.io/r/stats/predict.html),
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`get_posteriors()`](https://asanaei.github.io/mixLCA/reference/get_posteriors.md),
@@ -154,7 +205,7 @@ data(voter_perceptions)
 fit_cat <- fit_lca(voter_perceptions,
                    categorical = names(voter_perceptions),
                    n_classes   = 2,
-                   control     = lca_control(n_starts = 3, seed = 110),
+                   control     = lca_control(n_starts = 3),
                    verbose     = FALSE)
 fit_cat
 #> 
@@ -164,7 +215,7 @@ fit_cat
 #> Log-likelihood       : -30684.79 
 #> Parameters     : 73 
 #> Observations   : 2000 
-#> Converged      : TRUE (28 iterations) 
+#> Converged      : TRUE (29 iterations) 
 #> 
 #> Specification:
 #>   Categorical indicators: 12 
@@ -172,7 +223,7 @@ fit_cat
 #> 
 #> Class proportions:
 #> Class 1 Class 2 
-#>  0.4848  0.5152 
+#>  0.5152  0.4848 
 #> 
 
 # Mixed example: continuous markers with an age covariate.
@@ -181,7 +232,7 @@ fit_mix <- fit_lca(health_screening,
                    continuous  = c("marker_1", "marker_2", "marker_3", "marker_4"),
                    concomitant = ~ age,
                    n_classes   = 2,
-                   control     = lca_control(n_starts = 5, seed = 110),
+                   control     = lca_control(n_starts = 5),
                    verbose     = FALSE)
 summary(fit_mix, data = health_screening)
 #> 
@@ -198,35 +249,35 @@ summary(fit_mix, data = health_screening)
 #> 
 #> Class Proportions:
 #> Class 1 Class 2 
-#>  0.7908  0.2092 
+#>  0.2092  0.7908 
 #> 
 #> Continuous Indicator Means:
 #>         marker_1 marker_2 marker_3 marker_4
-#> Class 1  82.6076  73.9969  22.3791   0.3120
-#> Class 2 130.9492  97.6235  31.1184   0.5409
+#> Class 1 130.9492  97.6235  31.1184   0.5409
+#> Class 2  82.6076  73.9969  22.3791   0.3120
 #> 
 #> Covariance (Class 1):
-#>          marker_1 marker_2 marker_3 marker_4
-#> marker_1 727.8719  -1.4997  -1.6707   0.0540
-#> marker_2  -1.4997 548.9473   1.0490  -0.0899
-#> marker_3  -1.6707   1.0490  28.2157  -0.0230
-#> marker_4   0.0540  -0.0899  -0.0230   0.0098
-#> 
-#> Covariance (Class 2):
 #>           marker_1  marker_2 marker_3 marker_4
 #> marker_1 3715.1944 -280.3323   9.0840   2.0554
 #> marker_2 -280.3323 1789.9091 -48.7702   1.1472
 #> marker_3    9.0840  -48.7702  91.9307   0.3765
 #> marker_4    2.0554    1.1472   0.3765   0.0618
 #> 
+#> Covariance (Class 2):
+#>          marker_1 marker_2 marker_3 marker_4
+#> marker_1 727.8719  -1.4997  -1.6707   0.0540
+#> marker_2  -1.4997 548.9473   1.0490  -0.0899
+#> marker_3  -1.6707   1.0490  28.2157  -0.0230
+#> marker_4   0.0540  -0.0899  -0.0230   0.0098
+#> 
 #> Concomitant Coefficients (reference = Class 1):
 #> 
 #>   -> Class 2:
 #>              Estimate        SE      z        p    
-#> (Intercept) -3.490835  0.455513 -7.664 1.81e-14 ***
-#> age          0.047073  0.009305  5.059 4.22e-07 ***
+#> (Intercept)  3.490835  0.455513  7.664 1.81e-14 ***
+#> age         -0.047073  0.009305 -5.059 4.22e-07 ***
 #> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 # }
 ```

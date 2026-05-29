@@ -9,6 +9,7 @@ argument selects which plot to produce.
 # S3 method for class 'mixLCA'
 plot(
   x,
+  y = NULL,
   type = c("profiles", "bvr", "distal", "uncertainty", "convergence", "categorical",
     "spectral_scree", "spectral_loadings"),
   ...
@@ -20,6 +21,12 @@ plot(
 - x:
 
   A fitted `mixLCA` object.
+
+- y:
+
+  Unused. Present so the method signature matches the
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) generic in
+  base R.
 
 - type:
 
@@ -50,7 +57,7 @@ data(health_screening)
 fit_c <- fit_lca(health_screening,
                  continuous = c("marker_1","marker_2","marker_3","marker_4"),
                  n_classes  = 2,
-                 control    = lca_control(n_starts = 2, seed = 110),
+                 control    = lca_control(n_starts = 2),
                  verbose    = FALSE)
 plot(fit_c, type = "profiles")
 
@@ -69,7 +76,7 @@ fit_k <- fit_lca(voter_perceptions,
                  categorical   = names(voter_perceptions)[1:6],
                  n_classes     = 2,
                  spectral_rank = c(1L, 1L),
-                 control       = lca_control(n_starts = 2, seed = 110),
+                 control       = lca_control(n_starts = 2),
                  verbose       = FALSE)
 plot(fit_k, type = "categorical")
 

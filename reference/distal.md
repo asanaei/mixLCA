@@ -37,6 +37,20 @@ distal(model, data, formula, family = "gaussian")
 An object of class `mixDistal` containing class-specific model
 summaries.
 
+## References
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
+structure models with categorical variables: One-step versus three-step
+estimators. *Political Analysis*, 12(1), 3-27.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. *Political Analysis*, 18(4), 450-469.
+
+Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
+association between latent class membership and external variables using
+bias-adjusted three-step approaches. *Sociological Methodology*, 43(1),
+272-311.
+
 ## Examples
 
 ``` r
@@ -46,7 +60,7 @@ fit <- fit_lca(health_screening,
                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
                concomitant = ~ age,
                n_classes   = 2,
-               control     = lca_control(n_starts = 3, seed = 110),
+               control     = lca_control(n_starts = 3),
                verbose     = FALSE)
 
 # Binary distal outcome under BCH weighting
@@ -65,7 +79,7 @@ print(d_bin)
 #> (Intercept)  -3.9106  0.7234 -5.406 6.44e-08 ***
 #> age           0.0373  0.0154  2.422   0.0154 *  
 #> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #>   Effective N: 632.7 
 #> 
 #> --- Class 2 ---
@@ -73,7 +87,7 @@ print(d_bin)
 #> (Intercept) -1.67727  0.90877 -1.846 0.0649 .
 #> age          0.02628  0.01766  1.488 0.1367  
 #> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #>   Effective N: 167.3 
 #> 
 #> Classification Error Matrix:
@@ -98,16 +112,16 @@ print(d_gauss)
 #> (Intercept)  0.359361  0.018619 19.301 <2e-16 ***
 #> age         -0.001429  0.000438 -3.264 0.0011 ** 
 #> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #>   Residual SD: 0.0544 
 #>   Effective N: 632.7 
 #> 
 #> --- Class 2 ---
 #>               Estimate         SE      z        p    
-#> (Intercept)  0.6334106  0.1072167  5.908 3.47e-09 ***
+#> (Intercept)  0.6334108  0.1072167  5.908 3.47e-09 ***
 #> age         -0.0008039  0.0020789 -0.387    0.699    
 #> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #>   Residual SD: 0.2432 
 #>   Effective N: 167.3 
 #> 

@@ -21,7 +21,6 @@ auto_sld(
   max_total_rank = 10L,
   criterion = c("BIC", "aBIC", "AIC", "ICL"),
   base_model = NULL,
-  seed = 110L,
   verbose = TRUE,
   ...
 )
@@ -67,10 +66,6 @@ auto_sld(
   Optional pre-fitted `mixLCA` object. If NULL, an independence model (d
   = 0) is fitted automatically.
 
-- seed:
-
-  Integer random seed for the base model.
-
 - verbose:
 
   Logical: print search trajectory.
@@ -98,6 +93,7 @@ unnecessary parameter proliferation.
 
 ``` r
 if (FALSE) { # \dontrun{
+set.seed(110)
 data(voter_perceptions)
 fit <- auto_sld(
   data        = voter_perceptions,
@@ -105,7 +101,6 @@ fit <- auto_sld(
   n_classes   = 3,
   max_rank_per_class = 3L,
   criterion   = "BIC",
-  seed        = 110L,
   verbose     = FALSE)
 fit$specs$spectral_rank      # class-specific ranks selected
 fit$auto_spectral_path        # accepted increments

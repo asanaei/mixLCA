@@ -24,6 +24,10 @@ summary(object, data = NULL, ...)
 
   Unused.
 
+## Value
+
+Invisibly returns `object`.
+
 ## Examples
 
 ``` r
@@ -33,7 +37,7 @@ fit <- fit_lca(health_screening,
                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
                concomitant = ~ age,
                n_classes   = 2,
-               control     = lca_control(n_starts = 3, seed = 110),
+               control     = lca_control(n_starts = 3),
                verbose     = FALSE)
 summary(fit, data = health_screening)
 #> 
@@ -75,10 +79,10 @@ summary(fit, data = health_screening)
 #> 
 #>   -> Class 2:
 #>              Estimate        SE      z        p    
-#> (Intercept) -3.490835  0.455513 -7.664 1.81e-14 ***
+#> (Intercept) -3.490834  0.455513 -7.664 1.81e-14 ***
 #> age          0.047073  0.009305  5.059 4.22e-07 ***
 #> ---
-#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 # }
 ```
