@@ -41,7 +41,7 @@ continuous indicators within each class:
 \describe{
   \item{\code{"none"}}{Diagonal covariance (local independence).}
   \item{\code{"full"}}{Unrestricted covariance.}
-  \item{\code{"penalized"}}{Graphical-lasso penalised covariance,
+  \item{\code{"penalized"}}{Graphical-lasso penalized covariance,
     guaranteeing exact sparsity and positive definiteness.}
 }}
 
@@ -51,7 +51,7 @@ non-negative scalar or the string \code{"auto"} (default). When
 numeric, the supplied value is respected exactly (including 0,
 which then yields no shrinkage).}
 
-\item{control}{List of optimiser settings; see \code{\link{lca_control}}.}
+\item{control}{List of optimizer settings; see \code{\link{lca_control}}.}
 
 \item{verbose}{Logical: print per-start progress?}
 
@@ -75,12 +75,30 @@ across classes.}
 The prior model must have the same \code{n_classes}.}
 }
 \value{
-An opaque object of class \code{mixLCA}. Use the provided
-  accessors and S3 methods (\code{coef()}, \code{predict()},
-  \code{summary()}, \code{get_posteriors()}, \code{get_loadings()},
-  \code{plot()}) rather than \code{$}-indexing internal fields,
-  which may be restructured in future versions. Key downstream
-  functions: \code{\link{distal}}, \code{\link{fit_indices}},
+An object of class \code{mixLCA} (a list) containing:
+  \item{n_classes}{The number of latent classes.}
+  \item{log_lik}{The maximized log-likelihood at the final EM iterate.}
+  \item{posteriors}{An N x K matrix of posterior class probabilities.}
+  \item{continuous_params}{List of class-specific means and
+    covariances (when continuous indicators are used).}
+  \item{categorical_params}{List of class-specific category
+    probabilities (when categorical indicators are used).}
+  \item{cat_spectral_params}{List of class-specific Spectral Local
+    Dependence parameters (when \code{spectral_rank > 0}).}
+  \item{concomitant_coefs}{Matrix of multinomial logistic regression
+    coefficients (when concomitant predictors are supplied).}
+  \item{n_obs}{Number of observations used in estimation.}
+  \item{convergence}{List detailing EM convergence status and history.}
+  \item{specs}{List of model specifications (indicator types,
+    dependence structure, etc.).}
+  \item{AIC, BIC, aBIC, ICL, entropy}{Cached fit indices.}
+
+  Treat the return as opaque: use the provided accessors and S3
+  methods (\code{coef()}, \code{predict()}, \code{summary()},
+  \code{get_posteriors()}, \code{get_loadings()}, \code{plot()})
+  rather than \code{$}-indexing internal fields, which may be
+  restructured in future versions. Key downstream functions:
+  \code{\link{distal}}, \code{\link{fit_indices}},
   \code{\link{bvr_tests}}, \code{\link{enumerate_lca}}.
 }
 \description{
@@ -92,9 +110,9 @@ distal outcomes are estimated separately via \code{\link{distal}}
 under BCH inverse-classification-error weighting.
 }
 \details{
-The measurement likelihood is maximised by EM. Continuous indicators
+The measurement likelihood is maximized by EM. Continuous indicators
 follow class-specific multivariate normal distributions; missing
-entries are marginalised analytically. Categorical indicators follow
+entries are marginalized analytically. Categorical indicators follow
 a product-multinomial distribution; missing categories are omitted
 from the likelihood contribution. Non-diagonal covariance matrices
 may be freely estimated (\code{dependence = "full"}) or estimated
@@ -113,7 +131,7 @@ data(voter_perceptions)
 fit_cat <- fit_lca(voter_perceptions,
                    categorical = names(voter_perceptions),
                    n_classes   = 2,
-                   control     = lca_control(n_starts = 3, seed = 110),
+                   control     = lca_control(n_starts = 3),
                    verbose     = FALSE)
 fit_cat
 
@@ -123,7 +141,7 @@ fit_mix <- fit_lca(health_screening,
                    continuous  = c("marker_1", "marker_2", "marker_3", "marker_4"),
                    concomitant = ~ age,
                    n_classes   = 2,
-                   control     = lca_control(n_starts = 5, seed = 110),
+                   control     = lca_control(n_starts = 5),
                    verbose     = FALSE)
 summary(fit_mix, data = health_screening)
 }

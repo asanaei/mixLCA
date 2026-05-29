@@ -19,7 +19,7 @@
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' post <- get_posteriors(fit)
 #' dim(post)
@@ -51,7 +51,7 @@ get_posteriors.mixLCA <- function(x, ...) x$posteriors
 #'                categorical   = names(voter_perceptions),
 #'                n_classes     = 2,
 #'                spectral_rank = c(1L, 1L),
-#'                control       = lca_control(n_starts = 2, seed = 110),
+#'                control       = lca_control(n_starts = 2),
 #'                verbose       = FALSE)
 #' ld <- get_loadings(fit)
 #' head(ld, 12)
@@ -69,6 +69,7 @@ get_loadings.mixLCA <- function(x, ...) {
 #'
 #' @param x A \code{mixLCA} object.
 #' @param ... Unused.
+#' @return Invisibly returns \code{x}.
 #'
 #' @examples
 #' \donttest{
@@ -76,7 +77,7 @@ get_loadings.mixLCA <- function(x, ...) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' print(fit)
 #' }
@@ -130,6 +131,7 @@ print.mixLCA <- function(x, ...) {
 #' @param data Optional data frame: required for concomitant standard
 #'   errors.
 #' @param ... Unused.
+#' @return Invisibly returns \code{object}.
 #'
 #' @examples
 #' \donttest{
@@ -138,7 +140,7 @@ print.mixLCA <- function(x, ...) {
 #'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
 #'                concomitant = ~ age,
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 3, seed = 110),
+#'                control     = lca_control(n_starts = 3),
 #'                verbose     = FALSE)
 #' summary(fit, data = health_screening)
 #' }
@@ -318,7 +320,7 @@ summary.mixLCA <- function(object, data = NULL, ...) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 3,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #'
 #' # Default: N x K posterior probability matrix
@@ -389,11 +391,21 @@ predict.mixLCA <- function(object, newdata = NULL,
   D <- if (!is.null(cat_)) in_data[, cat_, drop = FALSE] else NULL
 
   if (!is.null(concom) && !is.null(object$concomitant_coefs)) {
-    if (inherits(concom, "formula")) {
-      X <- stats::model.matrix(concom, data = in_data)
+    # Use the training-time terms + xlevels when available so factor
+    # levels missing from `newdata` do not silently drop columns from
+    # the design matrix (which would then break X %*% coefs).
+    tt   <- object$specs$concom_terms
+    xlev <- object$specs$concom_xlevels
+    if (!is.null(tt)) {
+      mf <- stats::model.frame(tt, data = in_data, xlev = xlev,
+                               na.action = stats::na.pass)
+      X  <- stats::model.matrix(tt, mf)
     } else {
-      f_str <- paste("~", paste(concom, collapse = " + "))
-      X <- stats::model.matrix(stats::as.formula(f_str), data = in_data)
+      f_form <- if (inherits(concom, "formula"))
+        concom
+      else
+        stats::as.formula(paste("~", paste(concom, collapse = " + ")))
+      X <- stats::model.matrix(f_form, data = in_data)
     }
     priors <- compute_priors(X, object$concomitant_coefs)
   } else {
@@ -484,7 +496,7 @@ predict.mixLCA <- function(object, newdata = NULL,
 #'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
 #'                concomitant = ~ age,
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' cc <- coef(fit)
 #' names(cc)
@@ -524,7 +536,7 @@ coef.mixLCA <- function(object, ...) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' logLik(fit)
 #' }
@@ -551,7 +563,7 @@ logLik.mixLCA <- function(object, ...) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' nobs(fit)
 #' }
@@ -574,7 +586,7 @@ nobs.mixLCA <- function(object, ...) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' AIC(fit)
 #' # BIC-like penalty (k = log(N))
@@ -598,7 +610,7 @@ AIC.mixLCA <- function(object, ..., k = 2) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' BIC(fit)
 #' }

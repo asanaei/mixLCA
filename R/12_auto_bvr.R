@@ -9,7 +9,7 @@
 #' \describe{
 #'   \item{Phase 1}{Select \emph{K} by BIC across \code{K_range} using
 #'     diagonal covariance.}
-#'   \item{Phase 2a}{Compare diagonal, penalised, and full covariance
+#'   \item{Phase 2a}{Compare diagonal, penalized, and full covariance
 #'     structures for continuous indicators at the selected \emph{K}.}
 #'   \item{Phase 2b}{Vermunt-style BVR-guided specification search for
 #'     categorical indicators: iteratively add direct effects for the
@@ -30,7 +30,6 @@
 #'   effects to add during Phase 2b (default 5).
 #' @param bvr_threshold Numeric: minimum BVR chi-squared statistic to
 #'   consider a direct effect (default 3.84, i.e. p < .05 for df = 1).
-#' @param seed Random seed.
 #' @param verbose Logical: print progress?
 #' @param ... Additional arguments passed to \code{fit_lca} (e.g.,
 #'   \code{spectral_rank}, \code{spectral_pool}).
@@ -40,13 +39,13 @@
 #'
 #' @examples
 #' \dontrun{
+#' set.seed(110)
 #' data(voter_perceptions)
 #' fit <- auto_bvr(
 #'   data        = voter_perceptions,
 #'   categorical = names(voter_perceptions),
 #'   K_range     = 3,
 #'   max_direct_effects = 4L,
-#'   seed        = 110L,
 #'   n_starts    = 3,
 #'   verbose     = FALSE)
 #' fit$auto_path$direct_effects
@@ -56,7 +55,7 @@
 auto_bvr <- function(data, continuous = NULL, categorical = NULL,
                      concomitant = NULL, K_range = 2:5,
                      max_direct_effects = 5L, bvr_threshold = 3.84,
-                     seed = 110L, verbose = TRUE, ...) {
+                     verbose = TRUE, ...) {
 
   if (length(K_range) == 0) stop("K_range must not be empty.")
 
@@ -71,14 +70,23 @@ auto_bvr <- function(data, continuous = NULL, categorical = NULL,
   dots$tol <- NULL
   dots$seed <- NULL
   dots$control <- NULL
+  # Structural args injected by this wrapper into do.call(fit_lca, ...).
+  # Clearing them prevents the "formal argument matched by multiple
+  # actual arguments" fatal error if the user passes one of these
+  # through `...`.
+  dots$n_classes <- NULL
+  dots$dependence <- NULL
+  dots$penalty <- NULL
+  dots$cat_direct_effects <- NULL
+  dots$init_model <- NULL
 
   base_ctrl <- lca_control(
     max_iter = user_max_iter, tol = user_tol,
-    n_starts = user_n_starts, seed = seed,
+    n_starts = user_n_starts,
     kmeans_nstart = user_kmeans)
   warm_ctrl <- lca_control(
     max_iter = user_max_iter, tol = user_tol,
-    n_starts = 1L, seed = seed,
+    n_starts = 1L,
     kmeans_nstart = user_kmeans)
 
   # ==== Phase 1: Select K ====

@@ -39,6 +39,12 @@ reference:
       - enumerate_lca
       - auto_bvr
       - auto_sld
+  - title: tidymodels / tidyclust integration
+    desc: Specification and tidy-output methods for use inside the tidymodels stack.
+    contents:
+      - lca_clust
+      - tidy.mixLCA
+      - glance.mixLCA
   - title: Inference
     desc: Post-fit inference and prediction.
     contents:

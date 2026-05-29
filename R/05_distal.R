@@ -79,6 +79,20 @@ bch_weights <- function(posteriors) {
 #' @return An object of class \code{mixDistal} containing class-specific
 #'   model summaries.
 #'
+#' @references
+#' Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
+#' structure models with categorical variables: One-step versus
+#' three-step estimators. \emph{Political Analysis}, 12(1), 3-27.
+#'
+#' Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+#' improved three-step approaches. \emph{Political Analysis}, 18(4),
+#' 450-469.
+#'
+#' Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
+#' association between latent class membership and external variables
+#' using bias-adjusted three-step approaches. \emph{Sociological
+#' Methodology}, 43(1), 272-311.
+#'
 #' @examples
 #' \donttest{
 #' data(health_screening)
@@ -86,7 +100,7 @@ bch_weights <- function(posteriors) {
 #'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
 #'                concomitant = ~ age,
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 3, seed = 110),
+#'                control     = lca_control(n_starts = 3),
 #'                verbose     = FALSE)
 #'
 #' # Binary distal outcome under BCH weighting
@@ -207,7 +221,7 @@ distal <- function(model, data, formula, family = "gaussian") {
         eig_X <- eigen(XtWX, symmetric = TRUE)
         eig_ridge <- max(abs(eig_X$values)) * 1e-6 + 1e-8
         eig_X$values <- pmax(abs(eig_X$values), eig_ridge)
-        XtWX_pd <- eig_X$vectors %*% diag(eig_X$values) %*% t(eig_X$vectors)
+        XtWX_pd <- eig_X$vectors %*% diag(eig_X$values, nrow = length(eig_X$values)) %*% t(eig_X$vectors)
         delta <- as.vector(solve(XtWX_pd, score))
 
         # Step-halving: cut step until the next linear predictor stays bounded
@@ -245,7 +259,7 @@ distal <- function(model, data, formula, family = "gaussian") {
       eig_X    <- eigen(XtWX_raw, symmetric = TRUE)
       eig_ridge <- max(abs(eig_X$values)) * 1e-6 + 1e-8
       eig_X$values <- pmax(abs(eig_X$values), eig_ridge)
-      XtWX_pd  <- eig_X$vectors %*% diag(eig_X$values) %*% t(eig_X$vectors)
+      XtWX_pd  <- eig_X$vectors %*% diag(eig_X$values, nrow = length(eig_X$values)) %*% t(eig_X$vectors)
       XtWX_inv <- solve(XtWX_pd)
       resid_dev <- yc - mu_val
       scores    <- Xc * as.vector(w_k * resid_dev)
@@ -304,7 +318,7 @@ distal <- function(model, data, formula, family = "gaussian") {
 #'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
 #'                concomitant = ~ age,
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' d <- distal(fit, health_screening, outcome ~ age, family = "binomial")
 #' print(d)

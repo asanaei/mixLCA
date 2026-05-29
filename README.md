@@ -1,4 +1,4 @@
-# mixLCA
+# mixLCA <a href="https://asanaei.github.io/mixLCA/"><img src="man/figures/logo.png" align="right" height="138" alt="mixLCA hex logo" /></a>
 
 Partitioned latent class analysis for R, with mixed-type indicators,
 concomitant predictors, distal outcomes, and a low-rank treatment of
@@ -9,13 +9,13 @@ Website: <https://asanaei.github.io/mixLCA/>
 ## What it does
 
 - **Mixed indicators.** Continuous (multivariate normal with optional
-  graphical-lasso penalisation) and categorical (product-multinomial),
+  graphical-lasso penalization) and categorical (product-multinomial),
   jointly or alone.
 - **Partitioned architecture.** Antecedent concomitant predictors enter
   via multinomial logistic regression on class membership;
   contemporaneous manifest indicators define the measurement model;
   subsequent distal outcomes are estimated separately under
-  Bollen-Croon-Hagenaars (BCH) inverse-classification-error weighting.
+  Bolck-Croon-Hagenaars (BCH) inverse-classification-error weighting.
 - **Local dependence.** Direct effects between categorical pairs
   (Hagenaars-Vermunt specification search via `auto_bvr()`) and
   Spectral Local Dependence (`auto_sld()`), a rank-d eigendecomposition

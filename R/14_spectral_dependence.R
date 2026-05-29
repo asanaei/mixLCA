@@ -197,7 +197,7 @@ eval_spectral_density_oos <- function(newdata_encoded, encoding, pi_c, A_star) {
 #'                categorical   = names(voter_perceptions),
 #'                n_classes     = 2,
 #'                spectral_rank = c(1L, 1L),
-#'                control       = lca_control(n_starts = 2, seed = 110),
+#'                control       = lca_control(n_starts = 2),
 #'                verbose       = FALSE)
 #' ld <- spectral_loadings(fit)
 #' head(ld, 12)

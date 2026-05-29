@@ -61,7 +61,7 @@ measurement model leaks its variance into class meaning. `mixLCA`
 keeps the three blocks separate: concomitants enter through a
 multinomial logistic regression on class membership, and distals are
 estimated *after* the measurement model has converged, under
-Bollen-Curran-Heckman (BCH) inverse-classification-error weighting.
+Bolck-Croon-Hagenaars (BCH) inverse-classification-error weighting.
 
 This vignette walks through both pieces on the embedded
 `health_screening` dataset: a synthetic 800-subject screening study
@@ -89,7 +89,7 @@ The dataset has no missing values, so listwise deletion is not needed.
 ```{r naive}
 hs_naive <- lapply(2:3, function(K) {
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
-          control = lca_control(n_starts = 10, seed = 110),
+          control = lca_control(n_starts = 10),
           verbose = FALSE)
 })
 names(hs_naive) <- paste0("K", 2:3)
@@ -124,7 +124,7 @@ names:
 hs_concom_chr <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
-  control = lca_control(n_starts = 10, seed = 110),
+  control = lca_control(n_starts = 10),
   verbose = FALSE)
 ```
 
@@ -163,7 +163,7 @@ hs_concom_fm <- fit_lca(
   health_screening, continuous = hs_vars,
   concomitant = ~ age + I(age^2),
   n_classes = 2,
-  control = lca_control(n_starts = 10, seed = 110),
+  control = lca_control(n_starts = 10),
   verbose = FALSE)
 ```
 
@@ -195,7 +195,7 @@ fit_lca(..., concomitant = ~ splines::bs(age, df = 4))
 ## NAs in concomitant predictors
 
 `fit_lca()` will refuse to run if any concomitant value is NA. This
-is by design: silently dropping rows would desynchronise
+is by design: silently dropping rows would desynchronize
 `model$posteriors` from your input data and would invalidate any
 downstream distal model that expects per-row alignment. Impute or
 filter before calling:
@@ -242,8 +242,9 @@ The screening outcome is a *consequence* of marker class. We do
 **not** put it in the measurement model; we estimate it separately
 under BCH weighting.
 
-The BCH method (Bolck, Croon, Hagenaars 2004; refined by Vermunt
-2010) constructs class-specific inverse-classification-error weights
+The BCH method (Bolck, Croon, & Hagenaars, 2004; refined with WLS by
+Vermunt, 2010, and Bakk, Tekle, & Vermunt, 2013) constructs
+class-specific inverse-classification-error weights
 from the fitted posteriors, then fits a class-specific regression on
 the distal outcome using those weights. Because the measurement model
 is frozen before the distal step, no gradient from the distal outcome
@@ -305,7 +306,7 @@ sparsity in the inverse covariance matrix.
 hs_pen <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
-  control = lca_control(n_starts = 10, seed = 110),
+  control = lca_control(n_starts = 10),
   verbose = FALSE)
 ```
 
@@ -334,14 +335,14 @@ A typical analysis arc:
 # 1. Decide K with a naive fit
 fits <- lapply(2:5, function(K)
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
-          control = lca_control(n_starts = 10, seed = 110)))
+          control = lca_control(n_starts = 10)))
 compare_models(fits)
 
 # 2. Add concomitants
 fit <- fit_lca(health_screening, continuous = hs_vars,
                concomitant = ~ age,
                n_classes = 2,
-               control = lca_control(n_starts = 10, seed = 110))
+               control = lca_control(n_starts = 10))
 
 # 3. Diagnose local dependence
 bvr_tests(fit, health_screening)

@@ -1,6 +1,6 @@
 # ==============================================================================
 # File: R/04_em_engine.R
-# mixLCA - core Expectation-Maximisation engine.
+# mixLCA - core Expectation-Maximization engine.
 # ==============================================================================
 
 #' EM Engine for mixLCA
@@ -19,10 +19,9 @@
 #' @param n_classes Integer >= 2.
 #' @param dependence One of \code{"none"}, \code{"full"},
 #'   \code{"penalized"}.
-#' @param penalty Numeric L1 penalty for penalised dependence.
+#' @param penalty Numeric L1 penalty for penalized dependence.
 #' @param max_iter Maximum EM iterations.
 #' @param tol Convergence tolerance on absolute log-likelihood change.
-#' @param seed Random seed for initialisation.
 #' @param cat_direct_effects List of direct effect pairs, or NULL.
 #' @param spectral_rank Integer: target rank for SLD.
 #' @param spectral_pool Logical: pool Burt matrices across classes.
@@ -32,7 +31,7 @@
 run_em <- function(data, continuous = NULL, categorical = NULL,
                    concomitant = NULL, n_classes = 2L,
                    dependence = "full", penalty = 0,
-                   max_iter = 500L, tol = 1e-6, seed = 110L,
+                   max_iter = 500L, tol = 1e-6,
                    cat_direct_effects = NULL,
                    spectral_rank = 0L, spectral_pool = FALSE,
                    init_model = NULL, kmeans_nstart = 1L) {
@@ -49,15 +48,29 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
     data[, categorical, drop = FALSE] else NULL
 
   if (has_concom) {
-    if (inherits(concomitant, "formula")) {
-      X <- stats::model.matrix(concomitant, data = data)
-    } else {
-      f_str <- paste("~", paste(concomitant, collapse = " + "))
-      X <- stats::model.matrix(stats::as.formula(f_str), data = data)
-    }
+    # Build the model frame once and capture its terms + factor levels.
+    # Saving these on the fitted object lets predict() rebuild the
+    # design matrix on newdata even when a factor level is missing in
+    # the subset (which would otherwise drop a column and crash the
+    # X %*% coefs multiplication).
+    f_form <- if (inherits(concomitant, "formula"))
+      concomitant
+    else
+      stats::as.formula(paste("~", paste(concomitant, collapse = " + ")))
+    mf             <- stats::model.frame(f_form, data = data,
+                                         na.action = stats::na.pass)
+    concom_terms   <- stats::terms(mf)
+    concom_xlevels <- stats::.getXlevels(concom_terms, mf)
+    X              <- stats::model.matrix(concom_terms, mf)
+    # Strip the .Environment attr from the saved terms: by default it
+    # captures the caller's environment, which can bloat saved fits with
+    # the entire calling namespace. baseenv() is safe to look up in.
+    attr(concom_terms, ".Environment") <- baseenv()
   } else {
     X <- matrix(1, nrow = N, ncol = 1L)
     colnames(X) <- "(Intercept)"
+    concom_terms   <- NULL
+    concom_xlevels <- NULL
   }
   P <- ncol(X)
 
@@ -101,27 +114,21 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
     }
   }
 
-  # ---- Initialise parameters ----
-
-  # Random initialisation is sandboxed in withr::with_seed() so the user's
-  # global .Random.seed is left untouched (CRAN compliance).
-  if (!requireNamespace("withr", quietly = TRUE))
-    stop("Package 'withr' is required for reproducible initialisation.")
+  # ---- Initialize parameters ----
+  # Random init reads from the global RNG, exactly like stats::kmeans()
+  # and uwot::umap(). Users get a reproducible fit by calling
+  # set.seed() before fit_lca().
 
   if (warm) {
     posteriors <- init_model$posteriors
     if (nrow(posteriors) != N) {
-      posteriors <- withr::with_seed(seed, {
-        raw <- matrix(stats::runif(N * K), nrow = N, ncol = K)
-        sweep(raw, 1, rowSums(raw), "/")
-      })
+      raw        <- matrix(stats::runif(N * K), nrow = N, ncol = K)
+      posteriors <- sweep(raw, 1, rowSums(raw), "/")
       warm <- FALSE
     }
   } else {
-    posteriors <- withr::with_seed(seed, {
-      raw <- matrix(stats::runif(N * K), nrow = N, ncol = K)
-      sweep(raw, 1, rowSums(raw), "/")
-    })
+    raw        <- matrix(stats::runif(N * K), nrow = N, ncol = K)
+    posteriors <- sweep(raw, 1, rowSums(raw), "/")
   }
 
   # Concomitant coefficients
@@ -148,11 +155,21 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
         if (any(na_idx))
           Y_imp[na_idx, col] <- mean(Y_imp[, col], na.rm = TRUE)
       }
-      km <- withr::with_seed(seed + 1L,
-        stats::kmeans(Y_imp, centers = K, nstart = kmeans_nstart))
+      # kmeans can fail with empty-cluster errors on collinear or
+      # heavily skewed data; fall back to a random row pick when it does.
+      km <- tryCatch(
+        stats::kmeans(Y_imp, centers = K, nstart = kmeans_nstart),
+        error = function(e) {
+          idx <- sample.int(nrow(Y_imp), K, replace = FALSE)
+          list(centers = Y_imp[idx, , drop = FALSE])
+        }
+      )
       for (k in seq_len(K)) {
         means[[k]]       <- km$centers[k, ]
-        covariances[[k]] <- diag(apply(Y_imp, 2, stats::var, na.rm = TRUE))
+        v_vec            <- apply(Y_imp, 2, stats::var, na.rm = TRUE)
+        # diag(v) with length(v)==1 allocates a v x v identity, hence
+        # explicit nrow.
+        covariances[[k]] <- diag(v_vec, nrow = length(v_vec))
       }
     }
   }
@@ -181,6 +198,9 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
   ll_history <- numeric(max_iter)
   converged  <- FALSE
   ll         <- -Inf
+  # Declare in this lexical scope so the EM loop never has to rely on
+  # exists(), which would search the entire call stack.
+  active_offdiag_list <- NULL
 
   for (iter in seq_len(max_iter)) {
 
@@ -258,7 +278,7 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
         means[[k]]       <- upd$mean
         covariances[[k]] <- upd$covariance
         if (!is.null(upd$active_offdiag)) {
-          if (!exists("active_offdiag_list")) active_offdiag_list <- vector("list", K)
+          if (is.null(active_offdiag_list)) active_offdiag_list <- vector("list", K)
           active_offdiag_list[[k]] <- upd$active_offdiag
         }
       }
@@ -356,7 +376,7 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
     posteriors         = posteriors,
     continuous_params  = if (!is.null(Y))
       list(means = means, covariances = covariances,
-           active_offdiag = if (exists("active_offdiag_list")) active_offdiag_list else NULL) else NULL,
+           active_offdiag = active_offdiag_list) else NULL,
     categorical_params = if (!is.null(D)) cat_params else NULL,
     cat_dep_params     = if (has_deps && !has_spectral) cat_dep_params else NULL,
     cat_spectral_params = if (has_spectral) list(A_star = spec_A, V_d = spec_V, spectra = spec_lambda, encoding = spec_data) else NULL,
@@ -376,7 +396,9 @@ run_em <- function(data, continuous = NULL, categorical = NULL,
       penalty            = penalty,
       cat_direct_effects = cat_direct_effects,
       spectral_rank      = if (has_spectral) as.integer(spectral_rank) else rep(0L, K),
-      spectral_pool      = if (has_spectral) isTRUE(spectral_pool) else FALSE
+      spectral_pool      = if (has_spectral) isTRUE(spectral_pool) else FALSE,
+      concom_terms       = concom_terms,
+      concom_xlevels     = concom_xlevels
     )
   )
   class(result) <- "mixLCA"

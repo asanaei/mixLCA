@@ -32,7 +32,7 @@ softmax <- function(X) {
 #' Soft-Threshold Operator
 #'
 #' Applies element-wise soft thresholding: sign(x) * max(|x| - lambda, 0).
-#' Used for L1-penalised covariance estimation in mixLCA.
+#' Used for L1-penalized covariance estimation in mixLCA.
 #'
 #' @param x Numeric value or matrix.
 #' @param lambda Non-negative penalty.
@@ -202,4 +202,4 @@ validate_inputs <- function(data, continuous, categorical, concomitant,
 
   invisible(TRUE)
 }
-if(getRversion() >= "2.15.1") utils::globalVariables(c("magnitude", "name", "iteration", "log_lik", "value", "weight", "indicator", "lower", "upper", "max_posterior", "Category", "Probability", "Class", "Variable", "loading", "column_label", "item", "index", "eigenvalue", "class"))
+if(getRversion() >= "2.15.1") utils::globalVariables(c("magnitude", "name", "iteration", "log_lik", "value", "weight", "indicator", "lower", "upper", "max_posterior", "Category", "Probability", "Class", "Variable", "loading", "column_label", "item", "index", "eigenvalue", "class", "object", "new_data"))

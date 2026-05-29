@@ -17,6 +17,6 @@ update_concomitant(X, posteriors, current_coefs)
 Updated P x (K-1) coefficient matrix.
 }
 \description{
-Wraps BFGS optimisation of the multinomial logistic model.
+Wraps BFGS optimization of the multinomial logistic model.
 }
 \keyword{internal}

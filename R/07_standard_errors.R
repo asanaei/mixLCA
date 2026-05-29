@@ -21,7 +21,7 @@
 #'                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
 #'                concomitant = ~ age,
 #'                n_classes   = 2,
-#'                control     = lca_control(n_starts = 3, seed = 110),
+#'                control     = lca_control(n_starts = 3),
 #'                verbose     = FALSE)
 #' se <- concomitant_se(fit, health_screening)
 #' round(cbind(Estimate = fit$concomitant_coefs[, 1], SE = se[, 1]), 4)
@@ -98,7 +98,7 @@ concomitant_se <- function(model, data) {
 #' fit <- fit_lca(health_screening,
 #'                continuous = c("marker_1","marker_2","marker_3","marker_4"),
 #'                n_classes  = 2,
-#'                control    = lca_control(n_starts = 3, seed = 110),
+#'                control    = lca_control(n_starts = 3),
 #'                verbose    = FALSE)
 #' ses <- continuous_se(fit, health_screening)
 #' round(ses$mean_se[[1]], 4)   # SE of class-1 means
@@ -180,7 +180,7 @@ continuous_se <- function(model, data, step = 1e-4) {
     names(se_mu) <- cont
     mean_se[[k]] <- se_mu
 
-    # Diagonal-variance SEs from full Hessian over log-variance parameterisation
+    # Diagonal-variance SEs from full Hessian over log-variance parameterization
     log_diag_k <- log(diag(Sigma_k))
     ll_logvar_k <- function(lv) {
       covs_temp        <- covs_list

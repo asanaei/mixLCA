@@ -23,7 +23,7 @@
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 3,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' head(bvr_categorical(fit, voter_perceptions), 5)
 #' }
@@ -222,7 +222,7 @@ update_cat_dep <- function(df, weights, dep_pairs) {
         }
       }
 
-      # Floor and renormalise
+      # Floor and renormalize
       cond_mat[a, ] <- pmax(cond_mat[a, ], 1e-10)
       cond_mat[a, ] <- cond_mat[a, ] / sum(cond_mat[a, ])
     }

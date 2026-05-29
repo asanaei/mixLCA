@@ -17,6 +17,7 @@
 # AI tooling (never commit)
 # --------------------------------------------------------------------------
 .claude/
+.gemini/
 .cursor/
 .aider*
 .github/copilot*

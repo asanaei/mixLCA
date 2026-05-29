@@ -34,7 +34,7 @@ the suffix \code{_A} or \code{_B}.
 \details{
 Ratings are ordered four-level factors (\code{poor}, \code{fair},
 \code{good}, \code{excellent}). The generative model is a three-class
-mixture: a strong A-favouring class (40\%), a strong B-favouring class
+mixture: a strong A-favoring class (40\%), a strong B-favoring class
 (40\%), and a moderate / ambivalent class (20\%). Within each class, a
 shared latent factor induces local dependence between the six items
 rating the same candidate; this makes the dataset useful for

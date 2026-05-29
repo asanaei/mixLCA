@@ -5,37 +5,42 @@
 
 #' Control Parameters for mixLCA
 #'
-#' Bundles optimiser settings into a single list for use with
-#' \code{\link{fit_lca}}. Defaults reproduce the behaviour of prior
+#' Bundles optimizer settings into a single list for use with
+#' \code{\link{fit_lca}}. Defaults reproduce the behavior of prior
 #' beta releases.
 #'
 #' @param max_iter Maximum EM iterations per start.
 #' @param tol Convergence tolerance on absolute log-likelihood change.
 #' @param n_starts Integer: number of random starting points. For
 #'   publication-quality results consider at least 10.
-#' @param seed Base random seed; start \emph{s} uses \code{seed + s}.
-#'   The global \code{.Random.seed} is never modified.
 #' @param kmeans_nstart Integer: random initializations for the internal
 #'   \code{kmeans} used to seed continuous-indicator starting values.
 #'   Irrelevant for categorical-only models or when \code{init_model}
 #'   is supplied.
 #' @return A list of control values.
 #'
+#' @section Reproducibility:
+#' \code{fit_lca()} draws from the global RNG state for random
+#' initialization, exactly like \code{stats::kmeans()} and
+#' \code{uwot::umap()}. To get a reproducible fit, call
+#' \code{set.seed()} before \code{fit_lca()}.
+#'
 #' @examples
 #' # Default control parameters
 #' lca_control()
 #'
-#' # Tighter tolerance, more random starts, deterministic seed
-#' lca_control(max_iter = 1000L, tol = 1e-8,
-#'             n_starts = 10L, seed = 110L)
+#' # Tighter tolerance, more random starts
+#' lca_control(max_iter = 1000L, tol = 1e-8, n_starts = 10L)
+#'
+#' # Reproducible fit: set seed at the call site, like with kmeans
+#' set.seed(110)
+#' # then call fit_lca(..., control = lca_control(n_starts = 10L))
 #' @export
 lca_control <- function(max_iter = 500L, tol = 1e-6,
-                        n_starts = 1L, seed = 110L,
-                        kmeans_nstart = 1L) {
-  list(max_iter = as.integer(max_iter),
-       tol = as.numeric(tol),
-       n_starts = as.integer(n_starts),
-       seed = as.integer(seed),
+                        n_starts = 1L, kmeans_nstart = 1L) {
+  list(max_iter      = as.integer(max_iter),
+       tol           = as.numeric(tol),
+       n_starts      = as.integer(n_starts),
        kmeans_nstart = as.integer(kmeans_nstart))
 }
 
@@ -48,9 +53,9 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #' distal outcomes are estimated separately via \code{\link{distal}}
 #' under BCH inverse-classification-error weighting.
 #'
-#' The measurement likelihood is maximised by EM. Continuous indicators
+#' The measurement likelihood is maximized by EM. Continuous indicators
 #' follow class-specific multivariate normal distributions; missing
-#' entries are marginalised analytically. Categorical indicators follow
+#' entries are marginalized analytically. Categorical indicators follow
 #' a product-multinomial distribution; missing categories are omitted
 #' from the likelihood contribution. Non-diagonal covariance matrices
 #' may be freely estimated (\code{dependence = "full"}) or estimated
@@ -77,7 +82,7 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #'   \describe{
 #'     \item{\code{"none"}}{Diagonal covariance (local independence).}
 #'     \item{\code{"full"}}{Unrestricted covariance.}
-#'     \item{\code{"penalized"}}{Graphical-lasso penalised covariance,
+#'     \item{\code{"penalized"}}{Graphical-lasso penalized covariance,
 #'       guaranteeing exact sparsity and positive definiteness.}
 #'   }
 #' @param penalty Penalty for \code{dependence = "penalized"}. Either a
@@ -85,7 +90,7 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #'   \code{"auto"}, a heuristic value is selected from the data; when
 #'   numeric, the supplied value is respected exactly (including 0,
 #'   which then yields no shrinkage).
-#' @param control List of optimiser settings; see \code{\link{lca_control}}.
+#' @param control List of optimizer settings; see \code{\link{lca_control}}.
 #' @param verbose Logical: print per-start progress?
 #' @param cat_direct_effects List of two-element character vectors
 #'   specifying direct effects between categorical indicators to
@@ -103,12 +108,30 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #' @param init_model Optional \code{mixLCA} object for warm-starting.
 #'   The prior model must have the same \code{n_classes}.
 #'
-#' @return An opaque object of class \code{mixLCA}. Use the provided
-#'   accessors and S3 methods (\code{coef()}, \code{predict()},
-#'   \code{summary()}, \code{get_posteriors()}, \code{get_loadings()},
-#'   \code{plot()}) rather than \code{$}-indexing internal fields,
-#'   which may be restructured in future versions. Key downstream
-#'   functions: \code{\link{distal}}, \code{\link{fit_indices}},
+#' @return An object of class \code{mixLCA} (a list) containing:
+#'   \item{n_classes}{The number of latent classes.}
+#'   \item{log_lik}{The maximized log-likelihood at the final EM iterate.}
+#'   \item{posteriors}{An N x K matrix of posterior class probabilities.}
+#'   \item{continuous_params}{List of class-specific means and
+#'     covariances (when continuous indicators are used).}
+#'   \item{categorical_params}{List of class-specific category
+#'     probabilities (when categorical indicators are used).}
+#'   \item{cat_spectral_params}{List of class-specific Spectral Local
+#'     Dependence parameters (when \code{spectral_rank > 0}).}
+#'   \item{concomitant_coefs}{Matrix of multinomial logistic regression
+#'     coefficients (when concomitant predictors are supplied).}
+#'   \item{n_obs}{Number of observations used in estimation.}
+#'   \item{convergence}{List detailing EM convergence status and history.}
+#'   \item{specs}{List of model specifications (indicator types,
+#'     dependence structure, etc.).}
+#'   \item{AIC, BIC, aBIC, ICL, entropy}{Cached fit indices.}
+#'
+#'   Treat the return as opaque: use the provided accessors and S3
+#'   methods (\code{coef()}, \code{predict()}, \code{summary()},
+#'   \code{get_posteriors()}, \code{get_loadings()}, \code{plot()})
+#'   rather than \code{$}-indexing internal fields, which may be
+#'   restructured in future versions. Key downstream functions:
+#'   \code{\link{distal}}, \code{\link{fit_indices}},
 #'   \code{\link{bvr_tests}}, \code{\link{enumerate_lca}}.
 #'
 #' @examples
@@ -118,7 +141,7 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #' fit_cat <- fit_lca(voter_perceptions,
 #'                    categorical = names(voter_perceptions),
 #'                    n_classes   = 2,
-#'                    control     = lca_control(n_starts = 3, seed = 110),
+#'                    control     = lca_control(n_starts = 3),
 #'                    verbose     = FALSE)
 #' fit_cat
 #'
@@ -128,7 +151,7 @@ lca_control <- function(max_iter = 500L, tol = 1e-6,
 #'                    continuous  = c("marker_1", "marker_2", "marker_3", "marker_4"),
 #'                    concomitant = ~ age,
 #'                    n_classes   = 2,
-#'                    control     = lca_control(n_starts = 5, seed = 110),
+#'                    control     = lca_control(n_starts = 5),
 #'                    verbose     = FALSE)
 #' summary(fit_mix, data = health_screening)
 #' }
@@ -152,7 +175,7 @@ fit_lca <- function(data,
   n_classes <- as.integer(n_classes)
 
   if (!is.list(control) ||
-      !all(c("max_iter", "tol", "n_starts", "seed",
+      !all(c("max_iter", "tol", "n_starts",
              "kmeans_nstart") %in% names(control)))
     stop("`control` must be a list produced by lca_control().")
 
@@ -208,7 +231,6 @@ fit_lca <- function(data,
       penalty     = penalty,
       max_iter    = control$max_iter,
       tol         = control$tol,
-      seed        = control$seed,
       cat_direct_effects = cat_direct_effects,
       spectral_rank = spectral_rank,
       spectral_pool = spectral_pool,
@@ -227,7 +249,6 @@ fit_lca <- function(data,
       max_iter    = control$max_iter,
       tol         = control$tol,
       n_starts    = control$n_starts,
-      base_seed   = control$seed,
       verbose     = verbose,
       cat_direct_effects = cat_direct_effects,
       spectral_rank = spectral_rank,

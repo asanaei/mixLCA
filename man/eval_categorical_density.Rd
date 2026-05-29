@@ -18,6 +18,6 @@ Numeric vector of length N (log-densities).
 \description{
 Computes the log-probability of each observation's categorical
 indicators under class-specific multinomial parameters. Missing
-values are marginalised out (contribute zero to the sum).
+values are marginalized out (contribute zero to the sum).
 }
 \keyword{internal}

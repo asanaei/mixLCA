@@ -1,11 +1,11 @@
 # ==============================================================================
 # File: R/09_visualization.R
-# mixLCA - ggplot2-based visualisations.
+# mixLCA - ggplot2-based visualizations.
 # ==============================================================================
 
 #' Plot Method for mixLCA
 #'
-#' Single dispatch surface for all built-in visualisations. The
+#' Single dispatch surface for all built-in visualizations. The
 #' \code{type} argument selects which plot to produce.
 #'
 #' Plot-specific arguments (e.g.\ \code{data} for \code{"bvr"} and
@@ -14,6 +14,8 @@
 #' \code{"spectral_loadings"}) are forwarded via \code{...}.
 #'
 #' @param x A fitted \code{mixLCA} object.
+#' @param y Unused. Present so the method signature matches the
+#'   \code{plot()} generic in base R.
 #' @param type One of \code{"profiles"}, \code{"bvr"}, \code{"distal"},
 #'   \code{"uncertainty"}, \code{"convergence"}, \code{"categorical"},
 #'   \code{"spectral_scree"}, or \code{"spectral_loadings"}.
@@ -27,7 +29,7 @@
 #' fit_c <- fit_lca(health_screening,
 #'                  continuous = c("marker_1","marker_2","marker_3","marker_4"),
 #'                  n_classes  = 2,
-#'                  control    = lca_control(n_starts = 2, seed = 110),
+#'                  control    = lca_control(n_starts = 2),
 #'                  verbose    = FALSE)
 #' plot(fit_c, type = "profiles")
 #' plot(fit_c, type = "uncertainty")
@@ -40,7 +42,7 @@
 #'                  categorical   = names(voter_perceptions)[1:6],
 #'                  n_classes     = 2,
 #'                  spectral_rank = c(1L, 1L),
-#'                  control       = lca_control(n_starts = 2, seed = 110),
+#'                  control       = lca_control(n_starts = 2),
 #'                  verbose       = FALSE)
 #' plot(fit_k, type = "categorical")
 #' plot(fit_k, type = "spectral_scree")
@@ -51,10 +53,11 @@
 #'      variable = "marker_1")
 #' }
 #' @export
-plot.mixLCA <- function(x, type = c("profiles", "bvr", "distal",
-                                    "uncertainty", "convergence",
-                                    "categorical", "spectral_scree",
-                                    "spectral_loadings"), ...) {
+plot.mixLCA <- function(x, y = NULL,
+                        type = c("profiles", "bvr", "distal",
+                                 "uncertainty", "convergence",
+                                 "categorical", "spectral_scree",
+                                 "spectral_loadings"), ...) {
   type <- match.arg(type)
   switch(type,
     profiles          = .plot_profiles(x, ...),
@@ -146,7 +149,7 @@ plot.mixLCA <- function(x, type = c("profiles", "bvr", "distal",
 #' Constructs a network graph where nodes are continuous indicators
 #' and edges connect pairs whose residual covariance is significant
 #' at p < .05 (default) or exceeds a user-supplied numeric threshold.
-#' Edge thickness and opacity encode residual magnitude; edge colour
+#' Edge thickness and opacity encode residual magnitude; edge color
 #' distinguishes positive (red) from negative (blue) residuals.
 #'
 #' @param model A \code{mixLCA} object.

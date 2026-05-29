@@ -1,7 +1,7 @@
 # ==============================================================================
 # File: R/01_density_continuous.R
 # mixLCA - multivariate normal density with analytical missing-data
-# marginalisation; M-step updates with optional L1-penalised covariance.
+# marginalization; M-step updates with optional L1-penalized covariance.
 # ==============================================================================
 
 #' Evaluate Continuous Log-Density
@@ -9,7 +9,7 @@
 #' Computes the log-density of each observation under a class-specific
 #' multivariate normal distribution. When entries are missing the density
 #' is evaluated over the marginal distribution of the observed subset,
-#' which constitutes exact analytical marginalisation rather than
+#' which constitutes exact analytical marginalization rather than
 #' listwise deletion or ad hoc imputation.
 #'
 #' @param Y Numeric matrix (N x d), may contain \code{NA}.

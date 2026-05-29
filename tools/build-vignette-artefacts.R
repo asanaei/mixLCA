@@ -19,7 +19,7 @@ cat_items <- names(voter_perceptions)
 cat("=== voter_perceptions: K = 2, 3, 4 (naive) ===\n")
 voter_fits <- lapply(2:4, function(K) {
   fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
-          control = lca_control(n_starts = 5, seed = 110),
+          control = lca_control(n_starts = 5),
           verbose = FALSE)
 })
 names(voter_fits) <- paste0("K", 2:4)
@@ -31,7 +31,7 @@ voter_bvr <- auto_bvr(
   K_range = 3,
   max_direct_effects = 4L,
   bvr_threshold = 3.84,
-  seed = 110, verbose = FALSE,
+  verbose = FALSE,
   n_starts = 5)
 saveRDS(voter_bvr, file.path(out_dir, "voter_bvr_fit.rds"))
 
@@ -41,7 +41,7 @@ voter_sld <- auto_sld(
   n_classes = 3,
   max_rank_per_class = 3L,
   criterion = "BIC",
-  seed = 110, verbose = FALSE)
+  verbose = FALSE)
 saveRDS(voter_sld, file.path(out_dir, "voter_sld_fit.rds"))
 
 # ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
 cat("=== health_screening: K = 2, 3 (naive continuous) ===\n")
 hs_naive <- lapply(2:3, function(K) {
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
-          control = lca_control(n_starts = 10, seed = 110),
+          control = lca_control(n_starts = 10),
           verbose = FALSE)
 })
 names(hs_naive) <- paste0("K", 2:3)
@@ -63,7 +63,7 @@ cat("=== health_screening: K = 2 with concomitant age (character vec) ===\n")
 hs_concom_chr <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
-  control = lca_control(n_starts = 10, seed = 110),
+  control = lca_control(n_starts = 10),
   verbose = FALSE)
 saveRDS(hs_concom_chr, file.path(out_dir, "hs_concom_chr.rds"))
 
@@ -71,7 +71,7 @@ cat("=== health_screening: K = 2 with concomitant ~ age + I(age^2) (formula) ===
 hs_concom_fm <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = ~ age + I(age^2),
   n_classes = 2,
-  control = lca_control(n_starts = 10, seed = 110),
+  control = lca_control(n_starts = 10),
   verbose = FALSE)
 saveRDS(hs_concom_fm, file.path(out_dir, "hs_concom_fm.rds"))
 
@@ -79,7 +79,7 @@ cat("=== health_screening: penalized covariance ===\n")
 hs_pen <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
-  control = lca_control(n_starts = 10, seed = 110),
+  control = lca_control(n_starts = 10),
   verbose = FALSE)
 saveRDS(hs_pen, file.path(out_dir, "hs_penalized.rds"))
 

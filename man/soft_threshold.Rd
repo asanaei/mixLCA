@@ -16,6 +16,6 @@ Thresholded value(s).
 }
 \description{
 Applies element-wise soft thresholding: sign(x) * max(|x| - lambda, 0).
-Used for L1-penalised covariance estimation in mixLCA.
+Used for L1-penalized covariance estimation in mixLCA.
 }
 \keyword{internal}

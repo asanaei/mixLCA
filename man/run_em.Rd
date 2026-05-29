@@ -14,7 +14,6 @@ run_em(
   penalty = 0,
   max_iter = 500L,
   tol = 1e-06,
-  seed = 110L,
   cat_direct_effects = NULL,
   spectral_rank = 0L,
   spectral_pool = FALSE,
@@ -39,13 +38,11 @@ NULL.}
 \item{dependence}{One of \code{"none"}, \code{"full"},
 \code{"penalized"}.}
 
-\item{penalty}{Numeric L1 penalty for penalised dependence.}
+\item{penalty}{Numeric L1 penalty for penalized dependence.}
 
 \item{max_iter}{Maximum EM iterations.}
 
 \item{tol}{Convergence tolerance on absolute log-likelihood change.}
-
-\item{seed}{Random seed for initialisation.}
 
 \item{cat_direct_effects}{List of direct effect pairs, or NULL.}
 

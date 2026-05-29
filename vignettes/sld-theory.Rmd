@@ -102,7 +102,7 @@ class. Local dependence shows up as nonzero off-block-diagonal entries.
 
 # The spectral idea
 
-If we modelled $\boldsymbol{\Sigma}^{(k)}$ as a *full* matrix, we would
+If we modeled $\boldsymbol{\Sigma}^{(k)}$ as a *full* matrix, we would
 introduce $\binom{C}{2}$ free off-diagonal parameters per class, far
 more than the data support. SLD instead assumes that the off-diagonal
 covariance is *low-rank*: there exist $d_k \ll C$ orthonormal vectors
@@ -225,7 +225,7 @@ A few points worth flagging.
   shift would absorb information already encoded in
   $\boldsymbol{\pi}^{(k)}$ (the within-item probabilities), producing
   a non-identified surplus.
-- Because the M-step is composite (we maximise the sum of marginal
+- Because the M-step is composite (we maximize the sum of marginal
   item softmaxes, not the full multinomial joint), BIC computed in the
   usual way is *naive*: it under-penalises the composite likelihood.
   For rank selection in publication settings, prefer cross-validation
@@ -258,15 +258,14 @@ sim_one_class <- function(n, p_base, latent_loading) {
   as.data.frame(out)
 }
 
-withr::with_seed(110, {
-  c1 <- sim_one_class(250,
-    p_base = c(0.7,0.7,0.7,0.7, 0.3,0.3,0.3,0.3),
-    latent_loading = c(2,2,2,2, 0,0,0,0))
-  c2 <- sim_one_class(250,
-    p_base = c(0.3,0.3,0.3,0.3, 0.7,0.7,0.7,0.7),
-    latent_loading = c(0,0,0,0, 2,2,2,2))
-  df_sim <- rbind(c1, c2)
-})
+set.seed(110)
+c1 <- sim_one_class(250,
+  p_base = c(0.7,0.7,0.7,0.7, 0.3,0.3,0.3,0.3),
+  latent_loading = c(2,2,2,2, 0,0,0,0))
+c2 <- sim_one_class(250,
+  p_base = c(0.3,0.3,0.3,0.3, 0.7,0.7,0.7,0.7),
+  latent_loading = c(0,0,0,0, 2,2,2,2))
+df_sim <- rbind(c1, c2)
 df_sim[] <- lapply(df_sim, function(x) factor(x, levels = c(0,1), labels = c("no","yes")))
 names(df_sim) <- paste0("Q", 1:8)
 str(df_sim)
@@ -277,7 +276,7 @@ str(df_sim)
 fit_naive_sim <- fit_lca(df_sim,
                          categorical = names(df_sim),
                          n_classes = 2,
-                         control = lca_control(n_starts = 5, seed = 110),
+                         control = lca_control(n_starts = 5),
                          verbose = FALSE)
 
 # SLD K=2 with rank 1 per class
@@ -285,7 +284,7 @@ fit_sld_sim <- fit_lca(df_sim,
                        categorical = names(df_sim),
                        n_classes = 2,
                        spectral_rank = c(1L, 1L),
-                       control = lca_control(n_starts = 5, seed = 110),
+                       control = lca_control(n_starts = 5),
                        verbose = FALSE)
 
 data.frame(
@@ -324,7 +323,7 @@ every pair that the latent direction projects onto.
 **Sample size per class is small** relative to $C$. The conditional
 Burt matrix is a $C \times C$ covariance estimate; estimating its
 top-$d_k$ eigendecomposition requires enough class-weighted
-observations to stabilise the eigenvectors. As a rough rule:
+observations to stabilize the eigenvectors. As a rough rule:
 $N_k \gtrsim 10 \cdot C / K$.
 
 In either case `auto_sld()` will tell you by returning
@@ -344,6 +343,25 @@ recover the dominant residual covariance structure of the *pooled*
 sample; SLD's per-class eigendecomposition recovers it within each
 latent class.
 
+# Relation to Latent Class Factor Analysis (LCFA)
+
+SLD bears a surface similarity to Latent Class Factor Analysis
+(LCFA; Magidson & Vermunt, 2001). Both respond to the same problem,
+namely local-dependence violations in LCA, but the two are
+implemented through different machinery. LCFA fits a constrained
+log-linear model whose latent space is the Cartesian product of
+binary factors; the fit is typically by EM with quasi-Newton inner
+loops over factor-additive loadings. SLD keeps the original
+$K$-class latent variable and applies a closed-form eigendecomposition
+of the class-conditional residual Burt matrix to obtain a rank-$d_k$
+shift to the log response surface.
+
+LCFA is implemented in the `latent` R package
+(`lcfa()`), which is the right tool when the substantive theory is
+multi-factor and typological. SLD targets the case where the user
+wants one $K$-class typology to remain intact and absorb residual
+covariance separately.
+
 # References
 
 - Bartholomew, D. J., Steele, F., Galbraith, J., & Moustaki, I.
@@ -358,6 +376,10 @@ latent class.
 - Vermunt, J. K. (1999). A general nonparametric approach to the
   analysis of ordinal categorical data. *Sociological Methodology*,
   29, 187-223.
+- Jiménez, M., et al. `latent`: Latent variable models in R.
+  R package, <https://github.com/Marcosjnez/latent>. The
+  `lcfa()` function in that package provides a confirmatory LCFA
+  implementation with lavaan-syntax specification.
 
 The methodological paper for SLD itself is in preparation; this
 vignette will be updated with a citation once it is available.

@@ -22,7 +22,7 @@ A \code{ggplot} object via \code{ggraph}, or NULL when no
 Constructs a network graph where nodes are continuous indicators
 and edges connect pairs whose residual covariance is significant
 at p < .05 (default) or exceeds a user-supplied numeric threshold.
-Edge thickness and opacity encode residual magnitude; edge colour
+Edge thickness and opacity encode residual magnitude; edge color
 distinguishes positive (red) from negative (blue) residuals.
 }
 \keyword{internal}

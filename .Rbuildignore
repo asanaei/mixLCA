@@ -3,6 +3,7 @@
 ^\.DS_Store$
 ^.*\.DS_Store$
 ^\.claude$
+^\.gemini$
 ^\.cursor$
 ^\.aider.*
 ^CLAUDE\.md$
@@ -21,3 +22,6 @@
 ^\.gitignore$
 ^plans$
 ^data-raw$
+^pkgdown$
+^_americanize\.R$
+^_strip_seed\.R$

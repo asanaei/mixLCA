@@ -12,7 +12,6 @@ auto_bvr(
   K_range = 2:5,
   max_direct_effects = 5L,
   bvr_threshold = 3.84,
-  seed = 110L,
   verbose = TRUE,
   ...
 )
@@ -35,8 +34,6 @@ effects to add during Phase 2b (default 5).}
 \item{bvr_threshold}{Numeric: minimum BVR chi-squared statistic to
 consider a direct effect (default 3.84, i.e. p < .05 for df = 1).}
 
-\item{seed}{Random seed.}
-
 \item{verbose}{Logical: print progress?}
 
 \item{...}{Additional arguments passed to \code{fit_lca} (e.g.,
@@ -52,7 +49,7 @@ Three-phase automated model selection:
 \describe{
   \item{Phase 1}{Select \emph{K} by BIC across \code{K_range} using
     diagonal covariance.}
-  \item{Phase 2a}{Compare diagonal, penalised, and full covariance
+  \item{Phase 2a}{Compare diagonal, penalized, and full covariance
     structures for continuous indicators at the selected \emph{K}.}
   \item{Phase 2b}{Vermunt-style BVR-guided specification search for
     categorical indicators: iteratively add direct effects for the
@@ -66,13 +63,13 @@ Parallel execution of multiple starts is delegated to the user's active
 }
 \examples{
 \dontrun{
+set.seed(110)
 data(voter_perceptions)
 fit <- auto_bvr(
   data        = voter_perceptions,
   categorical = names(voter_perceptions),
   K_range     = 3,
   max_direct_effects = 4L,
-  seed        = 110L,
   n_starts    = 3,
   verbose     = FALSE)
 fit$auto_path$direct_effects

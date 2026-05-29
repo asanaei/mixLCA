@@ -14,7 +14,7 @@
 #'
 #' Ratings are ordered four-level factors (\code{poor}, \code{fair},
 #' \code{good}, \code{excellent}). The generative model is a three-class
-#' mixture: a strong A-favouring class (40\%), a strong B-favouring class
+#' mixture: a strong A-favoring class (40\%), a strong B-favoring class
 #' (40\%), and a moderate / ambivalent class (20\%). Within each class, a
 #' shared latent factor induces local dependence between the six items
 #' rating the same candidate; this makes the dataset useful for
@@ -70,7 +70,7 @@
 #' \code{age}) enter the measurement model through multinomial logistic
 #' regression on class membership, while the distal outcome
 #' (\code{outcome}) is estimated separately via
-#' \code{\link{distal}} under Bollen-Croon-Hagenaars (BCH) inverse-
+#' \code{\link{distal}} under Bolck-Croon-Hagenaars (BCH) inverse-
 #' classification-error weighting.
 #'
 #' The data are synthetic, authored by the package author for didactic
@@ -79,7 +79,7 @@
 #' source tree at \code{data-raw/make-example-data.R}.
 #'
 #' We deliberately do not derive this dataset from any real screening
-#' cohort. Labelling participants by latent "metabolic class" can carry
+#' cohort. Labeling participants by latent "metabolic class" can carry
 #' substantive implications that we leave to domain researchers; the
 #' synthetic construction here avoids importing those framings while
 #' preserving the joint structure (mixed continuous indicators,

@@ -14,7 +14,6 @@ auto_sld(
   max_total_rank = 10L,
   criterion = c("BIC", "aBIC", "AIC", "ICL"),
   base_model = NULL,
-  seed = 110L,
   verbose = TRUE,
   ...
 )
@@ -39,8 +38,6 @@ auto_sld(
 
 \item{base_model}{Optional pre-fitted \code{mixLCA} object. If NULL,
 an independence model (d = 0) is fitted automatically.}
-
-\item{seed}{Integer random seed for the base model.}
 
 \item{verbose}{Logical: print search trajectory.}
 
@@ -70,6 +67,7 @@ drift. Classes that do not exhibit residual dependence retain
 }
 \examples{
 \dontrun{
+set.seed(110)
 data(voter_perceptions)
 fit <- auto_sld(
   data        = voter_perceptions,
@@ -77,7 +75,6 @@ fit <- auto_sld(
   n_classes   = 3,
   max_rank_per_class = 3L,
   criterion   = "BIC",
-  seed        = 110L,
   verbose     = FALSE)
 fit$specs$spectral_rank      # class-specific ranks selected
 fit$auto_spectral_path        # accepted increments

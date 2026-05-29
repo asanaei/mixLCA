@@ -80,7 +80,6 @@ get_unmodeled_eigenvalues <- function(model, data, ranks, max_rank_per_class) {
 #'   (\code{"BIC"}, \code{"aBIC"}, \code{"AIC"}, or \code{"ICL"}).
 #' @param base_model Optional pre-fitted \code{mixLCA} object. If NULL,
 #'   an independence model (d = 0) is fitted automatically.
-#' @param seed Integer random seed for the base model.
 #' @param verbose Logical: print search trajectory.
 #' @param ... Additional arguments forwarded to \code{fit_lca}
 #'   (e.g., \code{max_iter}, \code{tol}, \code{dependence}).
@@ -92,6 +91,7 @@ get_unmodeled_eigenvalues <- function(model, data, ranks, max_rank_per_class) {
 #'
 #' @examples
 #' \dontrun{
+#' set.seed(110)
 #' data(voter_perceptions)
 #' fit <- auto_sld(
 #'   data        = voter_perceptions,
@@ -99,7 +99,6 @@ get_unmodeled_eigenvalues <- function(model, data, ranks, max_rank_per_class) {
 #'   n_classes   = 3,
 #'   max_rank_per_class = 3L,
 #'   criterion   = "BIC",
-#'   seed        = 110L,
 #'   verbose     = FALSE)
 #' fit$specs$spectral_rank      # class-specific ranks selected
 #' fit$auto_spectral_path        # accepted increments
@@ -110,7 +109,7 @@ auto_sld <- function(data, continuous = NULL, categorical = NULL,
                      concomitant = NULL, n_classes = 2L,
                      max_rank_per_class = 3L, max_total_rank = 10L,
                      criterion = c("BIC", "aBIC", "AIC", "ICL"),
-                     base_model = NULL, seed = 110L,
+                     base_model = NULL,
                      verbose = TRUE, ...) {
 
   if (is.null(categorical) || length(categorical) < 2L)
@@ -129,10 +128,16 @@ auto_sld <- function(data, continuous = NULL, categorical = NULL,
   dots$seed <- NULL
   dots$kmeans_nstart <- NULL
   dots$control <- NULL
+  # Structural args injected by this wrapper into do.call(fit_lca, ...).
+  # See the equivalent block in auto_bvr for the rationale.
+  dots$n_classes <- NULL
+  dots$spectral_rank <- NULL
+  dots$spectral_pool <- NULL
+  dots$init_model <- NULL
 
   ctrl <- lca_control(
     max_iter = user_max_iter, tol = user_tol,
-    n_starts = 1L, seed = seed,
+    n_starts = 1L,
     kmeans_nstart = user_kmeans)
 
   get_ic <- function(model, crit) fit_indices(model)[[crit]]

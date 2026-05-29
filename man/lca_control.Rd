@@ -4,13 +4,7 @@
 \alias{lca_control}
 \title{Control Parameters for mixLCA}
 \usage{
-lca_control(
-  max_iter = 500L,
-  tol = 1e-06,
-  n_starts = 1L,
-  seed = 110L,
-  kmeans_nstart = 1L
-)
+lca_control(max_iter = 500L, tol = 1e-06, n_starts = 1L, kmeans_nstart = 1L)
 }
 \arguments{
 \item{max_iter}{Maximum EM iterations per start.}
@@ -19,9 +13,6 @@ lca_control(
 
 \item{n_starts}{Integer: number of random starting points. For
 publication-quality results consider at least 10.}
-
-\item{seed}{Base random seed; start \emph{s} uses \code{seed + s}.
-The global \code{.Random.seed} is never modified.}
 
 \item{kmeans_nstart}{Integer: random initializations for the internal
 \code{kmeans} used to seed continuous-indicator starting values.
@@ -32,15 +23,26 @@ is supplied.}
 A list of control values.
 }
 \description{
-Bundles optimiser settings into a single list for use with
-\code{\link{fit_lca}}. Defaults reproduce the behaviour of prior
+Bundles optimizer settings into a single list for use with
+\code{\link{fit_lca}}. Defaults reproduce the behavior of prior
 beta releases.
 }
+\section{Reproducibility}{
+
+\code{fit_lca()} draws from the global RNG state for random
+initialization, exactly like \code{stats::kmeans()} and
+\code{uwot::umap()}. To get a reproducible fit, call
+\code{set.seed()} before \code{fit_lca()}.
+}
+
 \examples{
 # Default control parameters
 lca_control()
 
-# Tighter tolerance, more random starts, deterministic seed
-lca_control(max_iter = 1000L, tol = 1e-8,
-            n_starts = 10L, seed = 110L)
+# Tighter tolerance, more random starts
+lca_control(max_iter = 1000L, tol = 1e-8, n_starts = 10L)
+
+# Reproducible fit: set seed at the call site, like with kmeans
+set.seed(110)
+# then call fit_lca(..., control = lca_control(n_starts = 10L))
 }

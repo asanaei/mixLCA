@@ -20,7 +20,7 @@ Numeric vector of length N (log-densities).
 Computes the log-density of each observation under a class-specific
 multivariate normal distribution. When entries are missing the density
 is evaluated over the marginal distribution of the observed subset,
-which constitutes exact analytical marginalisation rather than
+which constitutes exact analytical marginalization rather than
 listwise deletion or ad hoc imputation.
 }
 \keyword{internal}

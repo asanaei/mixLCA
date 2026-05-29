@@ -18,7 +18,7 @@
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 3,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' fi <- fit_indices(fit)
 #' fi[c("log_lik", "n_params", "AIC", "BIC", "aBIC", "entropy", "ICL")]
@@ -44,7 +44,7 @@ fit_indices <- function(model) {
   ent_raw   <- -sum(post_safe * log(post_safe))
   entropy   <- if (K > 1L) 1 - ent_raw / (N * log(K)) else 1
 
-  # ICL = BIC penalised by classification uncertainty
+  # ICL = BIC penalized by classification uncertainty
   icl <- bic + 2 * ent_raw
 
   # Composite-likelihood flag
@@ -72,7 +72,7 @@ fit_indices <- function(model) {
 #' Computes the residual covariance between continuous indicators after
 #' subtracting the model-implied mixture covariance. Large residuals
 #' signal local dependence violations not captured by the current
-#' model. Use \code{plot_bvr()} to visualise the residual network.
+#' model. Use \code{plot_bvr()} to visualize the residual network.
 #'
 #' @param model A \code{mixLCA} object.
 #' @param data Data frame used for estimation.
@@ -85,7 +85,7 @@ fit_indices <- function(model) {
 #' fit <- fit_lca(health_screening,
 #'                continuous = c("marker_1","marker_2","marker_3","marker_4"),
 #'                n_classes  = 2,
-#'                control    = lca_control(n_starts = 2, seed = 110),
+#'                control    = lca_control(n_starts = 2),
 #'                verbose    = FALSE)
 #' round(bvr(fit, health_screening), 3)
 #' }
@@ -138,7 +138,7 @@ bvr <- function(model, data) {
 #' fit <- fit_lca(health_screening,
 #'                continuous = c("marker_1","marker_2","marker_3","marker_4"),
 #'                n_classes  = 2,
-#'                control    = lca_control(n_starts = 2, seed = 110),
+#'                control    = lca_control(n_starts = 2),
 #'                verbose    = FALSE)
 #' bvr_tests(fit, health_screening)
 #' }
@@ -190,7 +190,7 @@ bvr_tests <- function(model, data) {
 #' fit <- fit_lca(voter_perceptions,
 #'                categorical = names(voter_perceptions),
 #'                n_classes   = 3,
-#'                control     = lca_control(n_starts = 2, seed = 110),
+#'                control     = lca_control(n_starts = 2),
 #'                verbose     = FALSE)
 #' round(class_table(fit), 3)
 #' }
@@ -230,7 +230,7 @@ class_table <- function(model) {
 #' cat_items <- names(voter_perceptions)
 #' fits <- lapply(2:4, function(K)
 #'   fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
-#'           control = lca_control(n_starts = 2, seed = 110),
+#'           control = lca_control(n_starts = 2),
 #'           verbose = FALSE))
 #' names(fits) <- paste0("K", 2:4)
 #' compare_models(fits)

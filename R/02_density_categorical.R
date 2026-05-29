@@ -1,14 +1,14 @@
 # ==============================================================================
 # File: R/02_density_categorical.R
 # mixLCA - categorical (product-multinomial) density and M-step updates.
-# Missing categories contribute zero to the log-density (marginalisation).
+# Missing categories contribute zero to the log-density (marginalization).
 # ==============================================================================
 
 #' Evaluate Categorical Log-Density
 #'
 #' Computes the log-probability of each observation's categorical
 #' indicators under class-specific multinomial parameters. Missing
-#' values are marginalised out (contribute zero to the sum).
+#' values are marginalized out (contribute zero to the sum).
 #'
 #' @param df Data frame of categorical indicators (N x J).
 #' @param probs Named list: each element is a named probability vector
@@ -75,7 +75,7 @@ update_categorical <- function(df, weights) {
       }
     }
 
-    # Numerical floor and renormalise
+    # Numerical floor and renormalize
     p_vec        <- pmax(p_vec, 1e-10)
     p_vec        <- p_vec / sum(p_vec)
     out[[vname]] <- p_vec

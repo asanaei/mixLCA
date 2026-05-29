@@ -40,7 +40,7 @@ supported by \code{\link{fit_lca}}: concomitant predictors (here
 \code{age}) enter the measurement model through multinomial logistic
 regression on class membership, while the distal outcome
 (\code{outcome}) is estimated separately via
-\code{\link{distal}} under Bollen-Croon-Hagenaars (BCH) inverse-
+\code{\link{distal}} under Bolck-Croon-Hagenaars (BCH) inverse-
 classification-error weighting.
 
 The data are synthetic, authored by the package author for didactic
@@ -49,7 +49,7 @@ the package. A reproducible generation script is provided in the
 source tree at \code{data-raw/make-example-data.R}.
 
 We deliberately do not derive this dataset from any real screening
-cohort. Labelling participants by latent "metabolic class" can carry
+cohort. Labeling participants by latent "metabolic class" can carry
 substantive implications that we leave to domain researchers; the
 synthetic construction here avoids importing those framings while
 preserving the joint structure (mixed continuous indicators,

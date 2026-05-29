@@ -5,11 +5,12 @@
 
 #' Multi-Start EM Estimation for mixLCA
 #'
-#' Runs the EM algorithm from multiple random starting points (each
-#' seeded deterministically from \code{base_seed + s}) and returns the
-#' solution with the highest terminal log-likelihood. Parallel execution
-#' is delegated to the user's active \code{future::plan()}; this function
-#' never alters the global plan or the global random seed.
+#' Runs the EM algorithm from multiple random starting points and
+#' returns the solution with the highest terminal log-likelihood.
+#' Parallel execution is delegated to the user's active
+#' \code{future::plan()}; this function never alters the global plan or
+#' the global random seed. Reproducibility is the caller's job
+#' (\code{set.seed()} before calling).
 #'
 #' @param data Data frame.
 #' @param continuous Character vector or NULL.
@@ -21,7 +22,6 @@
 #' @param max_iter Integer.
 #' @param tol Numeric.
 #' @param n_starts Number of random starting configurations.
-#' @param base_seed Base random seed.
 #' @param verbose Logical: print per-start progress?
 #' @param cat_direct_effects List of direct effect pairs, or NULL.
 #' @param spectral_rank Integer: SLD rank (0 = disabled).
@@ -35,7 +35,7 @@ run_em_robust <- function(data, continuous = NULL, categorical = NULL,
                           concomitant = NULL, n_classes = 2L,
                           dependence = "full", penalty = 0,
                           max_iter = 500L, tol = 1e-6,
-                          n_starts = 1L, base_seed = 110L,
+                          n_starts = 1L,
                           verbose = TRUE,
                           cat_direct_effects = NULL,
                           spectral_rank = 0L, spectral_pool = FALSE,
@@ -45,7 +45,6 @@ run_em_robust <- function(data, continuous = NULL, categorical = NULL,
   best_ll    <- -Inf
 
   fit_start <- function(s) {
-    seed_s <- base_seed + s
     candidate <- tryCatch(
       run_em(
         data        = data,
@@ -57,7 +56,6 @@ run_em_robust <- function(data, continuous = NULL, categorical = NULL,
         penalty     = penalty,
         max_iter    = max_iter,
         tol         = tol,
-        seed        = seed_s,
         cat_direct_effects = cat_direct_effects,
         spectral_rank = spectral_rank,
         spectral_pool = spectral_pool,
@@ -174,7 +172,6 @@ enumerate_lca <- function(data, continuous = NULL, categorical = NULL,
       max_iter    = max_iter,
       tol         = tol,
       n_starts    = n_starts,
-      base_seed   = 110L,
       spectral_rank = spectral_rank,
       spectral_pool = spectral_pool,
       verbose     = verbose,

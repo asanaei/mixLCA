@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{mixLCA}(
   x,
+  y = NULL,
   type = c("profiles", "bvr", "distal", "uncertainty", "convergence", "categorical",
     "spectral_scree", "spectral_loadings"),
   ...
@@ -13,6 +14,9 @@
 }
 \arguments{
 \item{x}{A fitted \code{mixLCA} object.}
+
+\item{y}{Unused. Present so the method signature matches the
+\code{plot()} generic in base R.}
 
 \item{type}{One of \code{"profiles"}, \code{"bvr"}, \code{"distal"},
 \code{"uncertainty"}, \code{"convergence"}, \code{"categorical"},
@@ -24,7 +28,7 @@
 A \code{ggplot} object.
 }
 \description{
-Single dispatch surface for all built-in visualisations. The
+Single dispatch surface for all built-in visualizations. The
 \code{type} argument selects which plot to produce.
 }
 \details{
@@ -40,7 +44,7 @@ data(health_screening)
 fit_c <- fit_lca(health_screening,
                  continuous = c("marker_1","marker_2","marker_3","marker_4"),
                  n_classes  = 2,
-                 control    = lca_control(n_starts = 2, seed = 110),
+                 control    = lca_control(n_starts = 2),
                  verbose    = FALSE)
 plot(fit_c, type = "profiles")
 plot(fit_c, type = "uncertainty")
@@ -53,7 +57,7 @@ fit_k <- fit_lca(voter_perceptions,
                  categorical   = names(voter_perceptions)[1:6],
                  n_classes     = 2,
                  spectral_rank = c(1L, 1L),
-                 control       = lca_control(n_starts = 2, seed = 110),
+                 control       = lca_control(n_starts = 2),
                  verbose       = FALSE)
 plot(fit_k, type = "categorical")
 plot(fit_k, type = "spectral_scree")

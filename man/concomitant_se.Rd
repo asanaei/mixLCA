@@ -27,7 +27,7 @@ fit <- fit_lca(health_screening,
                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
                concomitant = ~ age,
                n_classes   = 2,
-               control     = lca_control(n_starts = 3, seed = 110),
+               control     = lca_control(n_starts = 3),
                verbose     = FALSE)
 se <- concomitant_se(fit, health_screening)
 round(cbind(Estimate = fit$concomitant_coefs[, 1], SE = se[, 1]), 4)

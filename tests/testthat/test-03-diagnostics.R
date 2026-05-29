@@ -31,7 +31,7 @@ test_that("fit_indices() entropy is in [0, 1]", {
   expect_lte(fi$entropy, 1)
 })
 
-test_that("fit_indices() BIC > AIC (more parameters penalised)", {
+test_that("fit_indices() BIC > AIC (more parameters penalized)", {
   df  <- make_df_small()
   fit <- fit_lca(df,
                  continuous = c("x1","x2","x3"),

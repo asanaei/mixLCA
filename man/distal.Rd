@@ -37,7 +37,7 @@ fit <- fit_lca(health_screening,
                continuous  = c("marker_1","marker_2","marker_3","marker_4"),
                concomitant = ~ age,
                n_classes   = 2,
-               control     = lca_control(n_starts = 3, seed = 110),
+               control     = lca_control(n_starts = 3),
                verbose     = FALSE)
 
 # Binary distal outcome under BCH weighting
@@ -50,4 +50,18 @@ d_gauss <- distal(fit, health_screening,
                   marker_4 ~ age, family = "gaussian")
 print(d_gauss)
 }
+}
+\references{
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
+structure models with categorical variables: One-step versus
+three-step estimators. \emph{Political Analysis}, 12(1), 3-27.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. \emph{Political Analysis}, 18(4),
+450-469.
+
+Bakk, Z., Tekle, F. B., & Vermunt, J. K. (2013). Estimating the
+association between latent class membership and external variables
+using bias-adjusted three-step approaches. \emph{Sociological
+Methodology}, 43(1), 272-311.
 }

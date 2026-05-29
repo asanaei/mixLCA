@@ -45,7 +45,7 @@ concomitant_grad <- function(par, X, posteriors) {
 
 #' M-Step: Update Concomitant Coefficients
 #'
-#' Wraps BFGS optimisation of the multinomial logistic model.
+#' Wraps BFGS optimization of the multinomial logistic model.
 #'
 #' @param X Numeric matrix (N x P), includes intercept.
 #' @param posteriors Numeric matrix (N x K).

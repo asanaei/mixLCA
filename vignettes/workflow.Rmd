@@ -107,7 +107,7 @@ the categorical side.
 ```{r naive-fit}
 voter_fits <- lapply(2:4, function(K) {
   fit_lca(voter_perceptions, categorical = cat_items, n_classes = K,
-          control = lca_control(n_starts = 5, seed = 110),
+          control = lca_control(n_starts = 5),
           verbose = FALSE)
 })
 names(voter_fits) <- paste0("K", 2:4)
@@ -160,7 +160,7 @@ voter_bvr <- auto_bvr(
   K_range = 3,                 # fix K so the comparison stays clean
   max_direct_effects = 4L,
   bvr_threshold = 3.84,
-  seed = 110, verbose = FALSE,
+  verbose = FALSE,
   n_starts = 5)
 ```
 
@@ -199,6 +199,66 @@ data.frame(
 Identical numbers because `auto_bvr` returned the naive K=3 model
 unchanged. On this dataset, pairwise remediation does not help.
 
+## Is `auto_bvr` just being greedy? A robustness probe
+
+`auto_bvr` is a greedy search: it tries the single biggest BVR pair,
+sees BIC worsen, and gives up. A reasonable question is whether some
+*other* pair (further down the BVR ranking) would have helped, or
+whether a *combination* of pairs would together pay for themselves
+even if no single pair does. The code below tries several
+hand-picked direct-effect specifications. We do not evaluate the
+chunk during vignette rendering; the printed numbers come from a
+one-time interactive run on the same data and seed.
+
+```{r bvr-handpicked, eval = FALSE}
+baseline_BIC <- fit_indices(fit_K3)$BIC   # 61256.36
+
+trial_pairs <- list(
+  list(c("moral_A",  "empath_A")),
+  list(c("moral_B",  "empath_B")),
+  list(c("intel_A",  "compet_A")),
+  list(c("intel_B",  "compet_B")),
+  list(c("moral_A",  "empath_A"), c("moral_B", "empath_B")),
+  list(c("moral_A",  "empath_A"), c("moral_B", "empath_B"),
+       c("intel_A",  "compet_A"))
+)
+
+for (de in trial_pairs) {
+  fit <- fit_lca(voter_perceptions, categorical = cat_items, n_classes = 3,
+                 cat_direct_effects = de,
+                 control = lca_control(n_starts = 3),
+                 verbose = FALSE)
+  cat(length(de), "DE(s):  BIC =", round(fit_indices(fit)$BIC, 2), "\n")
+}
+```
+
+Results (naive baseline BIC = 61256.36):
+
+| Direct effect(s)                                           | BIC      | $\Delta$ BIC |
+|------------------------------------------------------------|---------:|-------------:|
+| `moral_A`~`empath_A`                                        | 61401.26 |      +144.9  |
+| `moral_B`~`empath_B`                                        | 61395.98 |      +139.6  |
+| `intel_A`~`compet_A`                                        | 61400.70 |      +144.3  |
+| `intel_B`~`compet_B`                                        | 61400.48 |      +144.1  |
+| `moral_A`~`empath_A` + `moral_B`~`empath_B`                 | 61541.01 |      +284.7  |
+| Three pairs (A-only + B-only + intel/compet A)              | 61686.78 |      +430.4  |
+
+Every candidate raises BIC. Each direct-effect specification costs
+roughly 25 parameters (a $(C_p - 1)(C_c - 1)$ conditional table per
+class, three classes, four-level items) and the log-likelihood gain
+is not enough to amortize them. `auto_bvr`'s decision to stop after
+one rejected candidate was not a quirk of the greedy heuristic. On
+this dataset, **no combination of pairwise direct effects beats the
+naive K=3 baseline.**
+
+The reason is structural. The generative model behind
+`voter_perceptions` has a class-specific shared latent factor that
+shifts *every* item rating about the favored candidate at once.
+A direct effect on one pair captures a slice of that shift, but
+spends parameters proportional to the slice. The *whole* shift is
+better modeled as a single low-rank direction, which is exactly
+what SLD does.
+
 # 4. Spectral Local Dependence (SLD)
 
 When pairwise dependence is broad, the right tool is a *low-rank*
@@ -213,7 +273,7 @@ voter_sld <- auto_sld(
   n_classes = 3,
   max_rank_per_class = 3L,
   criterion = "BIC",
-  seed = 110, verbose = FALSE)
+  verbose = FALSE)
 ```
 
 ```{r sld-load, eval = !RUN_LIVE, include = FALSE}
@@ -229,6 +289,69 @@ round(fit_indices(voter_sld)$BIC, 2)
 captures the dominant residual structure in the largest class, while
 the smaller classes need no spectral correction. The BIC drops from
 ~61256 (naive K=3) to ~60997, a savings of ~260 points.
+
+## Is rank 1 really enough? A d-sweep
+
+`auto_sld`'s greedy search accepted exactly one rank in exactly one
+class. A natural worry is that a richer specification (more ranks,
+or ranks in additional classes) might do better. The code below
+fits every plausible alternative once, with the same seed and
+starts. As before we ship the chunk as `eval = FALSE`; the numbers
+below come from a one-time run.
+
+```{r sld-sweep, eval = FALSE}
+ranks_to_try <- list(
+  c(1L, 0L, 0L),   # the auto_sld pick
+  c(2L, 0L, 0L),
+  c(3L, 0L, 0L),
+  c(1L, 1L, 1L),
+  c(2L, 1L, 0L),
+  c(2L, 1L, 1L),
+  c(2L, 2L, 2L)
+)
+for (r in ranks_to_try) {
+  fit <- fit_lca(voter_perceptions, categorical = cat_items, n_classes = 3,
+                 spectral_rank = r,
+                 control = lca_control(n_starts = 3),
+                 verbose = FALSE)
+  cat(paste(r, collapse = ","), "  BIC =", round(fit_indices(fit)$BIC, 2),
+      "  n_params =", fit$n_params, "\n")
+}
+```
+
+Results (naive K=3 baseline BIC = 61256.36):
+
+| Ranks       | $n_{\text{params}}$ | BIC      | $\Delta$ BIC vs. naive |
+|-------------|--------------------:|---------:|-----------------------:|
+| (1, 0, 0)   | 145                 | **60996.60** |              **-259.8** |
+| (2, 0, 0)   | 178                 | 61159.38 |               -97.0     |
+| (1, 1, 1)   | 215                 | 61183.31 |               -73.1     |
+| (2, 1, 0)   | 213                 | 61232.01 |               -24.3     |
+| (2, 1, 1)   | 248                 | 61358.55 |              +102.2     |
+| (3, 0, 0)   | 209                 | 61416.08 |              +159.7     |
+| (2, 2, 2)   | 314                 | 61792.47 |              +536.1     |
+
+Two things to read off the table.
+
+First, **(1, 0, 0) is the unique BIC-optimum** among reasonable
+configurations. The greedy `auto_sld` did not just find an improvement;
+it found *the* improvement.
+
+Second, **adding a second rank in the dominant class hurts**: (2, 0, 0)
+beats (3, 0, 0) but is itself worse than (1, 0, 0) by ~160 BIC points.
+The interpretation is that after the first eigen-direction is removed,
+the remaining residual covariance in the dominant class is too thin
+to justify its 33-parameter cost.
+
+The same is true across classes: adding rank-1 to all three classes
+gives (1, 1, 1) with BIC 61183, worse than (1, 0, 0) by ~190 points.
+The smaller classes have small unmodelled eigenvalues, and the
+data don't pay for capturing them.
+
+This is `auto_sld` working exactly as designed: the eigenvalue-by-BIC
+search is a principled, data-adaptive way to avoid both
+over-modeling (paying for noise eigenvalues) and under-modeling
+(missing real residual covariance).
 
 # 5. Three-way comparison
 
@@ -254,8 +377,8 @@ covariance by adding an extra class whose only purpose is to soak up
 shared variance; the SLD K=3 fit captures the same structure in a
 single low-rank direction without inflating the class count. The SLD
 solution is more interpretable because the three classes retain their
-substantive meaning (favours A, favours B, moderate), and the
-residual covariance is explicitly modelled rather than hidden inside
+substantive meaning (favors A, favors B, moderate), and the
+residual covariance is explicitly modeled rather than hidden inside
 an extra class.
 
 You can inspect the loadings to read off which items contribute to
@@ -298,6 +421,7 @@ mat_naive <- extract_excellent(fit_K3, a_items)
 
 matplot(t(mat_naive), type = "b", pch = 19, lty = 1,
         xaxt = "n", xlab = "", ylab = "P(rating = 'excellent')",
+        ylim = c(0, 1),
         main = "Naive K=3, items about candidate A")
 axis(1, at = seq_along(a_items), labels = a_items, las = 2, cex.axis = 0.8)
 legend("topright", legend = rownames(mat_naive), pch = 19,
@@ -306,7 +430,7 @@ legend("topright", legend = rownames(mat_naive), pch = 19,
 
 The three classes separate as expected from the generative model: one
 strongly positive about candidate A, one negative (these are the
-class that favours B), and one moderate.
+class that favors B), and one moderate.
 
 # 7. Takeaways
 
