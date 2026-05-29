@@ -36,11 +36,11 @@ fit <- fit_lca(health_screening,
                verbose    = FALSE)
 bvr_tests(fit, health_screening)
 #>       var1     var2 residual_cov       chi_sq   p_value
-#> 1 marker_1 marker_2 0.1634600176 1.360841e-05 0.9970566
-#> 2 marker_1 marker_3 0.0893743151 6.764780e-05 0.9934376
-#> 3 marker_1 marker_4 0.0029215622 1.333686e-04 0.9907858
-#> 4 marker_2 marker_3 0.0313518139 1.607196e-05 0.9968013
-#> 5 marker_2 marker_4 0.0013511379 5.507291e-05 0.9940789
-#> 6 marker_3 marker_4 0.0004971185 1.239660e-04 0.9911165
+#> 1 marker_1 marker_2 0.1634123576 1.360048e-05 0.9970575
+#> 2 marker_1 marker_3 0.0893441432 6.760213e-05 0.9934398
+#> 3 marker_1 marker_4 0.0029205507 1.332763e-04 0.9907890
+#> 4 marker_2 marker_3 0.0313433284 1.606326e-05 0.9968022
+#> 5 marker_2 marker_4 0.0013506172 5.503047e-05 0.9940811
+#> 6 marker_3 marker_4 0.0004969341 1.238740e-04 0.9911198
 # }
 ```

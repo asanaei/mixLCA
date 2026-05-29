@@ -40,8 +40,7 @@ A list of control values.
 [`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md)
 draws from the global RNG state for random initialisation, exactly like
 [`stats::kmeans()`](https://rdrr.io/r/stats/kmeans.html) and
-[`uwot::umap()`](https://jlmelville.github.io/uwot/reference/umap.html).
-To get a reproducible fit, call
+`uwot::umap()`. To get a reproducible fit, call
 [`set.seed()`](https://rdrr.io/r/base/Random.html) before
 [`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md).
 
