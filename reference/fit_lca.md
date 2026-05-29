@@ -249,35 +249,35 @@ summary(fit_mix, data = health_screening)
 #> 
 #> Class Proportions:
 #> Class 1 Class 2 
-#>  0.2092  0.7908 
+#>  0.7908  0.2092 
 #> 
 #> Continuous Indicator Means:
 #>         marker_1 marker_2 marker_3 marker_4
-#> Class 1 130.9492  97.6235  31.1184   0.5409
-#> Class 2  82.6076  73.9969  22.3791   0.3120
+#> Class 1  82.6076  73.9969  22.3791   0.3120
+#> Class 2 130.9492  97.6235  31.1184   0.5409
 #> 
 #> Covariance (Class 1):
-#>           marker_1  marker_2 marker_3 marker_4
-#> marker_1 3715.1944 -280.3323   9.0840   2.0554
-#> marker_2 -280.3323 1789.9091 -48.7702   1.1472
-#> marker_3    9.0840  -48.7702  91.9307   0.3765
-#> marker_4    2.0554    1.1472   0.3765   0.0618
-#> 
-#> Covariance (Class 2):
 #>          marker_1 marker_2 marker_3 marker_4
 #> marker_1 727.8719  -1.4997  -1.6707   0.0540
 #> marker_2  -1.4997 548.9473   1.0490  -0.0899
 #> marker_3  -1.6707   1.0490  28.2157  -0.0230
 #> marker_4   0.0540  -0.0899  -0.0230   0.0098
 #> 
+#> Covariance (Class 2):
+#>           marker_1  marker_2 marker_3 marker_4
+#> marker_1 3715.1944 -280.3323   9.0840   2.0554
+#> marker_2 -280.3323 1789.9091 -48.7702   1.1472
+#> marker_3    9.0840  -48.7702  91.9307   0.3765
+#> marker_4    2.0554    1.1472   0.3765   0.0618
+#> 
 #> Concomitant Coefficients (reference = Class 1):
 #> 
 #>   -> Class 2:
 #>              Estimate        SE      z        p    
-#> (Intercept)  3.490835  0.455513  7.664 1.81e-14 ***
-#> age         -0.047073  0.009305 -5.059 4.22e-07 ***
+#> (Intercept) -3.490835  0.455513 -7.664 1.81e-14 ***
+#> age          0.047073  0.009305  5.059 4.22e-07 ***
 #> ---
-#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 #> 
 # }
 ```

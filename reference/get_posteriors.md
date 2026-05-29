@@ -49,6 +49,6 @@ head(round(post, 3))
 #> [5,] 1.000 0.000
 #> [6,] 0.347 0.653
 colSums(post) / nrow(post)   # estimated class proportions
-#> [1] 0.4847926 0.5152074
+#> [1] 0.484792 0.515208
 # }
 ```

@@ -47,7 +47,7 @@ fi[c("log_lik", "n_params", "AIC", "BIC", "aBIC", "entropy", "ICL")]
 #> [1] 60906.89
 #> 
 #> $entropy
-#> [1] 0.8210241
+#> [1] 0.8210245
 #> 
 #> $ICL
 #> [1] 62042.86
