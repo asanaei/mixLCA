@@ -28,7 +28,6 @@ Website: <https://asanaei.github.io/mixLCA/>
 ## Installation
 
 ``` r
-
 # install.packages("remotes")
 remotes::install_github("asanaei/mixLCA")
 ```
@@ -39,7 +38,6 @@ working compiler toolchain.
 ## Quick start
 
 ``` r
-
 library(mixLCA)
 
 data("PimaIndiansDiabetes2", package = "mlbench")
@@ -77,7 +75,6 @@ The methodological paper for SLD is in preparation. For now, please cite
 the package:
 
 ``` r
-
 citation("mixLCA")
 ```
 
@@ -116,6 +113,18 @@ Entry points for fitting latent class models.
   : Automated Model Selection for mixLCA
 - [`auto_sld()`](https://asanaei.github.io/mixLCA/reference/auto_sld.md)
   : Automated Class-Specific Spectral Rank Selection
+
+## tidymodels / tidyclust integration
+
+Specification and tidy-output methods for use inside the tidymodels
+stack.
+
+- [`lca_clust()`](https://asanaei.github.io/mixLCA/reference/lca_clust.md)
+  : Latent Class Clustering
+- [`tidy(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/tidy.mixLCA.md)
+  : Tidy a mixLCA Model
+- [`glance(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/glance.mixLCA.md)
+  : Glance at a mixLCA Model
 
 ## Inference
 

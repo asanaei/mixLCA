@@ -40,10 +40,10 @@ fit <- fit_lca(voter_perceptions,
                verbose     = FALSE)
 head(bvr_categorical(fit, voter_perceptions), 5)
 #>        var1     var2      bvr df      p_value
-#> 60 honest_B empath_B 39.06998  9 1.119060e-05
-#> 55 honest_A empath_A 36.92595  9 2.713116e-05
-#> 10  moral_A empath_A 36.18012  9 3.683225e-05
-#> 53 honest_A  intel_A 34.90877  9 6.183174e-05
-#> 6   moral_A honest_A 32.06767  9 1.938358e-04
+#> 60 honest_B empath_B 39.06830  9 1.119844e-05
+#> 55 honest_A empath_A 36.92791  9 2.710936e-05
+#> 10  moral_A empath_A 36.18152  9 3.681117e-05
+#> 53 honest_A  intel_A 34.91134  9 6.176745e-05
+#> 6   moral_A honest_A 32.07182  9 1.935154e-04
 # }
 ```

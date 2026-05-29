@@ -32,17 +32,17 @@ fit <- fit_lca(voter_perceptions,
 ld <- spectral_loadings(fit)
 head(ld, 12)
 #>      class dimension     item  category     loading
-#> 1  Class 1         1  moral_A excellent -0.05736223
-#> 2  Class 1         1  moral_A      fair -0.08992328
-#> 3  Class 1         1  moral_A      good -0.07013618
-#> 4  Class 1         1  moral_A      poor  0.21742168
-#> 5  Class 1         1  moral_B excellent -0.27767245
-#> 6  Class 1         1  moral_B      fair  0.12489918
-#> 7  Class 1         1  moral_B      good  0.04322520
-#> 8  Class 1         1  moral_B      poor  0.10954806
-#> 9  Class 1         1 compet_A excellent -0.05776006
-#> 10 Class 1         1 compet_A      fair -0.07875409
-#> 11 Class 1         1 compet_A      good -0.06689979
-#> 12 Class 1         1 compet_A      poor  0.20341393
+#> 1  Class 1         1  moral_A excellent  0.27175478
+#> 2  Class 1         1  moral_A      fair -0.14132453
+#> 3  Class 1         1  moral_A      good -0.05203359
+#> 4  Class 1         1  moral_A      poor -0.07839665
+#> 5  Class 1         1  moral_B excellent  0.07388753
+#> 6  Class 1         1  moral_B      fair  0.07129815
+#> 7  Class 1         1  moral_B      good  0.07767543
+#> 8  Class 1         1  moral_B      poor -0.22286111
+#> 9  Class 1         1 compet_A excellent  0.27342641
+#> 10 Class 1         1 compet_A      fair -0.09666383
+#> 11 Class 1         1 compet_A      good -0.09084443
+#> 12 Class 1         1 compet_A      poor -0.08591814
 # }
 ```

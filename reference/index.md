@@ -30,6 +30,18 @@ Entry points for fitting latent class models.
 - [`auto_sld()`](https://asanaei.github.io/mixLCA/reference/auto_sld.md)
   : Automated Class-Specific Spectral Rank Selection
 
+## tidymodels / tidyclust integration
+
+Specification and tidy-output methods for use inside the tidymodels
+stack.
+
+- [`lca_clust()`](https://asanaei.github.io/mixLCA/reference/lca_clust.md)
+  : Latent Class Clustering
+- [`tidy(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/tidy.mixLCA.md)
+  : Tidy a mixLCA Model
+- [`glance(`*`<mixLCA>`*`)`](https://asanaei.github.io/mixLCA/reference/glance.mixLCA.md)
+  : Glance at a mixLCA Model
+
 ## Inference
 
 Post-fit inference and prediction.

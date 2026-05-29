@@ -41,7 +41,7 @@ print(fit)
 #> Log-likelihood       : -30684.79 
 #> Parameters     : 73 
 #> Observations   : 2000 
-#> Converged      : TRUE (27 iterations) 
+#> Converged      : TRUE (24 iterations) 
 #> 
 #> Specification:
 #>   Categorical indicators: 12 
