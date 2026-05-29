@@ -39,7 +39,7 @@ names(cc)
 #> [1] "concomitant" "means"       "covariances"
 cc$concomitant
 #>                 Class_2
-#> (Intercept)  3.49083451
+#> (Intercept)  3.49083450
 #> age         -0.04707317
 cc$means
 #> [[1]]

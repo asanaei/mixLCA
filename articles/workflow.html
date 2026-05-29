@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>A Workflow for Latent Class Analysis: Naive Fit, BVR Adjustments, and Spectral Local Dependence • mixLCA</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="A Workflow for Latent Class Analysis: Naive Fit, BVR Adjustments, and Spectral Local Dependence">
 </head>
@@ -30,7 +30,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/mixLCA.html">Get started</a></li>
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/workflow.html">A workflow for LCA (naive, BVR, SLD)</a></li>
@@ -63,7 +63,7 @@
             
             <h4 data-toc-skip class="date">2026-05-28</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/asanaei/mixLCA/blob/main/vignettes/workflow.Rmd" class="external-link"><code>vignettes/workflow.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/asanaei/mixLCA/blob/HEAD/vignettes/workflow.Rmd" class="external-link"><code>vignettes/workflow.Rmd</code></a></small>
       <div class="d-none name"><code>workflow.Rmd</code></div>
     </div>
 
@@ -217,6 +217,112 @@ efficient response.</p>
 <p>Identical numbers because <code>auto_bvr</code> returned the naive
 K=3 model unchanged. On this dataset, pairwise remediation does not
 help.</p>
+<div class="section level3">
+<h3 id="is-auto_bvr-just-being-greedy-a-robustness-probe">Is <code>auto_bvr</code> just being greedy? A robustness probe<a class="anchor" aria-label="anchor" href="#is-auto_bvr-just-being-greedy-a-robustness-probe"></a>
+</h3>
+<p><code>auto_bvr</code> is a greedy search: it tries the single biggest
+BVR pair, sees BIC worsen, and gives up. A reasonable question is
+whether some <em>other</em> pair (further down the BVR ranking) would
+have helped, or whether a <em>combination</em> of pairs would together
+pay for themselves even if no single pair does. The code below tries
+several hand-picked direct-effect specifications. We do not evaluate the
+chunk during vignette rendering; the printed numbers come from a
+one-time interactive run on the same data and seed.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">baseline_BIC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_indices.html">fit_indices</a></span><span class="op">(</span><span class="va">fit_K3</span><span class="op">)</span><span class="op">$</span><span class="va">BIC</span>   <span class="co"># 61256.36</span></span>
+<span></span>
+<span><span class="va">trial_pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moral_A"</span>,  <span class="st">"empath_A"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moral_B"</span>,  <span class="st">"empath_B"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intel_A"</span>,  <span class="st">"compet_A"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intel_B"</span>,  <span class="st">"compet_B"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moral_A"</span>,  <span class="st">"empath_A"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moral_B"</span>, <span class="st">"empath_B"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moral_A"</span>,  <span class="st">"empath_A"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"moral_B"</span>, <span class="st">"empath_B"</span><span class="op">)</span>,</span>
+<span>       <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intel_A"</span>,  <span class="st">"compet_A"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">de</span> <span class="kw">in</span> <span class="va">trial_pairs</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lca.html">fit_lca</a></span><span class="op">(</span><span class="va">voter_perceptions</span>, categorical <span class="op">=</span> <span class="va">cat_items</span>, n_classes <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                 cat_direct_effects <span class="op">=</span> <span class="va">de</span>,</span>
+<span>                 control <span class="op">=</span> <span class="fu"><a href="../reference/lca_control.html">lca_control</a></span><span class="op">(</span>n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">110</span><span class="op">)</span>,</span>
+<span>                 verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">de</span><span class="op">)</span>, <span class="st">"DE(s):  BIC ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/fit_indices.html">fit_indices</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">BIC</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Results (naive baseline BIC = 61256.36):</p>
+<table class="table">
+<colgroup>
+<col width="71%">
+<col width="11%">
+<col width="16%">
+</colgroup>
+<thead><tr class="header">
+<th>Direct effect(s)</th>
+<th align="right">BIC</th>
+<th align="right">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+BIC</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>
+<code>moral_A</code>~<code>empath_A</code>
+</td>
+<td align="right">61401.26</td>
+<td align="right">+144.9</td>
+</tr>
+<tr class="even">
+<td>
+<code>moral_B</code>~<code>empath_B</code>
+</td>
+<td align="right">61395.98</td>
+<td align="right">+139.6</td>
+</tr>
+<tr class="odd">
+<td>
+<code>intel_A</code>~<code>compet_A</code>
+</td>
+<td align="right">61400.70</td>
+<td align="right">+144.3</td>
+</tr>
+<tr class="even">
+<td>
+<code>intel_B</code>~<code>compet_B</code>
+</td>
+<td align="right">61400.48</td>
+<td align="right">+144.1</td>
+</tr>
+<tr class="odd">
+<td>
+<code>moral_A</code>~<code>empath_A</code> +
+<code>moral_B</code>~<code>empath_B</code>
+</td>
+<td align="right">61541.01</td>
+<td align="right">+284.7</td>
+</tr>
+<tr class="even">
+<td>Three pairs (A-only + B-only + intel/compet A)</td>
+<td align="right">61686.78</td>
+<td align="right">+430.4</td>
+</tr>
+</tbody>
+</table>
+<p>Every candidate raises BIC. Each direct-effect specification costs
+roughly 25 parameters (a
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mi>p</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mi>c</mi></msub><mo>−</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">(C_p - 1)(C_c - 1)</annotation></semantics></math>
+conditional table per class, three classes, four-level items) and the
+log-likelihood gain is not enough to amortize them.
+<code>auto_bvr</code>’s decision to stop after one rejected candidate
+was not a quirk of the greedy heuristic. On this dataset, <strong>no
+combination of pairwise direct effects beats the naive K=3
+baseline.</strong></p>
+<p>The reason is structural. The generative model behind
+<code>voter_perceptions</code> has a class-specific shared latent factor
+that shifts <em>every</em> item rating about the favoured candidate at
+once. A direct effect on one pair captures a slice of that shift, but
+spends parameters proportional to the slice. The <em>whole</em> shift is
+better modelled as a single low-rank direction, which is exactly what
+SLD does.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="spectral-local-dependence-sld">4. Spectral Local Dependence (SLD)<a class="anchor" aria-label="anchor" href="#spectral-local-dependence-sld"></a>
@@ -227,14 +333,14 @@ rather than a sequence of pairwise terms. <code><a href="../reference/auto_sld.h
 greedy forward search over class-specific ranks, adding one rank to the
 class with the largest unmodelled eigenvalue, accepting only if BIC
 improves.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">voter_sld</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/auto_sld.html">auto_sld</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">voter_perceptions</span>, categorical <span class="op">=</span> <span class="va">cat_items</span>,</span>
 <span>  n_classes <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  max_rank_per_class <span class="op">=</span> <span class="fl">3L</span>,</span>
 <span>  criterion <span class="op">=</span> <span class="st">"BIC"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">110</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">voter_sld</span><span class="op">$</span><span class="va">specs</span><span class="op">$</span><span class="va">spectral_rank</span></span>
 <span><span class="co">#&gt; [1] 1 0 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/fit_indices.html">fit_indices</a></span><span class="op">(</span><span class="va">voter_sld</span><span class="op">)</span><span class="op">$</span><span class="va">BIC</span>, <span class="fl">2</span><span class="op">)</span></span>
@@ -244,11 +350,117 @@ single low-rank direction captures the dominant residual structure in
 the largest class, while the smaller classes need no spectral
 correction. The BIC drops from ~61256 (naive K=3) to ~60997, a savings
 of ~260 points.</p>
+<div class="section level3">
+<h3 id="is-rank-1-really-enough-a-d-sweep">Is rank 1 really enough? A d-sweep<a class="anchor" aria-label="anchor" href="#is-rank-1-really-enough-a-d-sweep"></a>
+</h3>
+<p><code>auto_sld</code>’s greedy search accepted exactly one rank in
+exactly one class. A natural worry is that a richer specification (more
+ranks, or ranks in additional classes) might do better. The code below
+fits every plausible alternative once, with the same seed and starts. As
+before we ship the chunk as <code>eval = FALSE</code>; the numbers below
+come from a one-time run.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ranks_to_try</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,   <span class="co"># the auto_sld pick</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">1L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="va">ranks_to_try</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_lca.html">fit_lca</a></span><span class="op">(</span><span class="va">voter_perceptions</span>, categorical <span class="op">=</span> <span class="va">cat_items</span>, n_classes <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                 spectral_rank <span class="op">=</span> <span class="va">r</span>,</span>
+<span>                 control <span class="op">=</span> <span class="fu"><a href="../reference/lca_control.html">lca_control</a></span><span class="op">(</span>n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">110</span><span class="op">)</span>,</span>
+<span>                 verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">r</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span>, <span class="st">"  BIC ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/fit_indices.html">fit_indices</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">BIC</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>      <span class="st">"  n_params ="</span>, <span class="va">fit</span><span class="op">$</span><span class="va">n_params</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Results (naive K=3 baseline BIC = 61256.36):</p>
+<table class="table">
+<colgroup>
+<col width="19%">
+<col width="30%">
+<col width="14%">
+<col width="35%">
+</colgroup>
+<thead><tr class="header">
+<th>Ranks</th>
+<th align="right"><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mtext mathvariant="normal">params</mtext></msub><annotation encoding="application/x-tex">n_{\text{params}}</annotation></semantics></math></th>
+<th align="right">BIC</th>
+<th align="right">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+BIC vs. naive</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>(1, 0, 0)</td>
+<td align="right">145</td>
+<td align="right"><strong>60996.60</strong></td>
+<td align="right"><strong>-259.8</strong></td>
+</tr>
+<tr class="even">
+<td>(2, 0, 0)</td>
+<td align="right">178</td>
+<td align="right">61159.38</td>
+<td align="right">-97.0</td>
+</tr>
+<tr class="odd">
+<td>(1, 1, 1)</td>
+<td align="right">215</td>
+<td align="right">61183.31</td>
+<td align="right">-73.1</td>
+</tr>
+<tr class="even">
+<td>(2, 1, 0)</td>
+<td align="right">213</td>
+<td align="right">61232.01</td>
+<td align="right">-24.3</td>
+</tr>
+<tr class="odd">
+<td>(2, 1, 1)</td>
+<td align="right">248</td>
+<td align="right">61358.55</td>
+<td align="right">+102.2</td>
+</tr>
+<tr class="even">
+<td>(3, 0, 0)</td>
+<td align="right">209</td>
+<td align="right">61416.08</td>
+<td align="right">+159.7</td>
+</tr>
+<tr class="odd">
+<td>(2, 2, 2)</td>
+<td align="right">314</td>
+<td align="right">61792.47</td>
+<td align="right">+536.1</td>
+</tr>
+</tbody>
+</table>
+<p>Two things to read off the table.</p>
+<p>First, <strong>(1, 0, 0) is the unique BIC-optimum</strong> among
+reasonable configurations. The greedy <code>auto_sld</code> did not just
+find an improvement; it found <em>the</em> improvement.</p>
+<p>Second, <strong>adding a second rank in the dominant class
+hurts</strong>: (2, 0, 0) beats (3, 0, 0) but is itself worse than (1,
+0, 0) by ~160 BIC points. The interpretation is that after the first
+eigen-direction is removed, the remaining residual covariance in the
+dominant class is too thin to justify its 33-parameter cost.</p>
+<p>The same is true across classes: adding rank-1 to all three classes
+gives (1, 1, 1) with BIC 61183, worse than (1, 0, 0) by ~190 points. The
+smaller classes have small unmodelled eigenvalues, and the data don’t
+pay for capturing them.</p>
+<p>This is <code>auto_sld</code> working exactly as designed: the
+eigenvalue-by-BIC search is a principled, data-adaptive way to avoid
+both over-modelling (paying for noise eigenvalues) and under-modelling
+(missing real residual covariance).</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="three-way-comparison">5. Three-way comparison<a class="anchor" aria-label="anchor" href="#three-way-comparison"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fi_naive4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_indices.html">fit_indices</a></span><span class="op">(</span><span class="va">voter_fits</span><span class="op">$</span><span class="va">K4</span><span class="op">)</span></span>
 <span><span class="va">fi_sld</span>    <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_indices.html">fit_indices</a></span><span class="op">(</span><span class="va">voter_sld</span><span class="op">)</span></span>
 <span></span>
@@ -277,7 +489,7 @@ meaning (favours A, favours B, moderate), and the residual covariance is
 explicitly modelled rather than hidden inside an extra class.</p>
 <p>You can inspect the loadings to read off which items contribute to
 each latent direction:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">voter_sld</span>, type <span class="op">=</span> <span class="st">"spectral_loadings"</span>, dimension <span class="op">=</span> <span class="fl">1</span>, class <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="workflow-sld-loadings-1.png" class="r-plt" alt="SLD loadings: rank 1 in the largest class." width="85%"><p class="caption">
@@ -288,7 +500,7 @@ SLD loadings: rank 1 in the largest class.
 <div class="section level2">
 <h2 id="substantive-comparison-who-are-the-classes">6. Substantive comparison: who are the classes?<a class="anchor" aria-label="anchor" href="#substantive-comparison-who-are-the-classes"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">props_naive</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_posteriors.html">get_posteriors</a></span><span class="op">(</span><span class="va">fit_K3</span><span class="op">)</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">props_sld</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">colMeans</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_posteriors.html">get_posteriors</a></span><span class="op">(</span><span class="va">voter_sld</span><span class="op">)</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>class <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, naive <span class="op">=</span> <span class="va">props_naive</span>, sld <span class="op">=</span> <span class="va">props_sld</span><span class="op">)</span></span>
@@ -299,7 +511,7 @@ SLD loadings: rank 1 in the largest class.
 <p>The class proportions move only slightly between the naive K=3 fit
 and the SLD-augmented fit. The substantive class meaning is preserved
 across the two specifications:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">extract_excellent</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">fit</span>, <span class="va">items</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">K</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">n_classes</span></span>
 <span>  <span class="va">cp</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">categorical_params</span></span>
@@ -371,24 +583,21 @@ example.</li>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.6.0 (2026-04-24)</span></span>
-<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 24.04.4 LTS</span></span>
+<span><span class="co">#&gt; R version 4.4.3 (2025-02-28)</span></span>
+<span><span class="co">#&gt; Platform: aarch64-apple-darwin20</span></span>
+<span><span class="co">#&gt; Running under: macOS Sequoia 15.7.4</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
-<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0</span></span>
+<span><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib </span></span>
+<span><span class="co">#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
-<span><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
-<span><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
-<span><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
+<span><span class="co">#&gt; [1] C</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; time zone: UTC</span></span>
-<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
+<span><span class="co">#&gt; time zone: America/Chicago</span></span>
+<span><span class="co">#&gt; tzcode source: internal</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attached base packages:</span></span>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
@@ -397,17 +606,18 @@ example.</li>
 <span><span class="co">#&gt; [1] mixLCA_1.0.1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.0    </span></span>
-<span><span class="co">#&gt;  [5] tidyselect_1.2.1   Rcpp_1.1.1-1.1     jquerylib_0.1.4    systemfonts_1.3.2 </span></span>
-<span><span class="co">#&gt;  [9] scales_1.4.0       textshaping_1.0.5  yaml_2.3.12        fastmap_1.2.0     </span></span>
-<span><span class="co">#&gt; [13] ggplot2_4.0.3      R6_2.6.1           labeling_0.4.3     generics_0.1.4    </span></span>
-<span><span class="co">#&gt; [17] knitr_1.51         tibble_3.3.1       desc_1.4.3         bslib_0.11.0      </span></span>
-<span><span class="co">#&gt; [21] pillar_1.11.1      RColorBrewer_1.1-3 rlang_1.2.0        cachem_1.1.0      </span></span>
-<span><span class="co">#&gt; [25] xfun_0.57          fs_2.1.0           sass_0.4.10        S7_0.2.2          </span></span>
-<span><span class="co">#&gt; [29] cli_3.6.6          pkgdown_2.2.0      withr_3.0.2        magrittr_2.0.5    </span></span>
-<span><span class="co">#&gt; [33] digest_0.6.39      grid_4.6.0         lifecycle_1.0.5    vctrs_0.7.3       </span></span>
-<span><span class="co">#&gt; [37] evaluate_1.0.5     glue_1.8.1         farver_2.1.2       ragg_1.5.2        </span></span>
-<span><span class="co">#&gt; [41] rmarkdown_2.31     tools_4.6.0        pkgconfig_2.0.3    htmltools_0.5.9</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0        compiler_4.4.3    </span></span>
+<span><span class="co">#&gt;  [5] tidyselect_1.2.1   Rcpp_1.1.0         jquerylib_0.1.4    systemfonts_1.2.3 </span></span>
+<span><span class="co">#&gt;  [9] scales_1.4.0       textshaping_1.0.1  yaml_2.3.10        fastmap_1.2.0     </span></span>
+<span><span class="co">#&gt; [13] ggplot2_4.0.2      R6_2.6.1           labeling_0.4.3     generics_0.1.4    </span></span>
+<span><span class="co">#&gt; [17] knitr_1.51         htmlwidgets_1.6.4  tibble_3.3.0       desc_1.4.3        </span></span>
+<span><span class="co">#&gt; [21] bslib_0.9.0        pillar_1.11.0      RColorBrewer_1.1-3 rlang_1.1.7       </span></span>
+<span><span class="co">#&gt; [25] cachem_1.1.0       xfun_0.52          fs_1.6.7           sass_0.4.10       </span></span>
+<span><span class="co">#&gt; [29] S7_0.2.1           cli_3.6.5          pkgdown_2.2.0      withr_3.0.2       </span></span>
+<span><span class="co">#&gt; [33] magrittr_2.0.3     digest_0.6.37      grid_4.4.3         lifecycle_1.0.5   </span></span>
+<span><span class="co">#&gt; [37] vctrs_0.7.1        evaluate_1.0.4     glue_1.8.0         farver_2.1.2      </span></span>
+<span><span class="co">#&gt; [41] ragg_1.4.0         rmarkdown_2.30     tools_4.4.3        pkgconfig_2.0.3   </span></span>
+<span><span class="co">#&gt; [45] htmltools_0.5.8.1</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -1,4 +1,4 @@
-pandoc: 3.8.3
+pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
@@ -6,7 +6,7 @@ articles:
   mixLCA: mixLCA.html
   sld-theory: sld-theory.html
   workflow: workflow.html
-last_built: 2026-05-28T22:22Z
+last_built: 2026-05-29T03:12Z
 urls:
   reference: https://asanaei.github.io/mixLCA/reference
   article: https://asanaei.github.io/mixLCA/articles
