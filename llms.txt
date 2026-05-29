@@ -28,6 +28,7 @@ Website: <https://asanaei.github.io/mixLCA/>
 ## Installation
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("asanaei/mixLCA")
 ```
@@ -38,6 +39,7 @@ working compiler toolchain.
 ## Quick start
 
 ``` r
+
 library(mixLCA)
 
 data("PimaIndiansDiabetes2", package = "mlbench")
@@ -75,6 +77,7 @@ The methodological paper for SLD is in preparation. For now, please cite
 the package:
 
 ``` r
+
 citation("mixLCA")
 ```
 

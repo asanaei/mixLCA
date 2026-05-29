@@ -37,8 +37,8 @@ fit <- fit_lca(voter_perceptions,
                verbose     = FALSE)
 glance(fit)
 #>   n_classes    logLik      AIC      BIC     aBIC   entropy      ICL nobs
-#> 1         3 -30210.13 60640.26 61256.36 60906.89 0.8210255 62042.86 2000
+#> 1         3 -30210.13 60640.26 61256.36 60906.89 0.8210178 62042.89 2000
 #>   n_params converged iterations
-#> 1      110      TRUE         58
+#> 1      110      TRUE         68
 # }
 ```

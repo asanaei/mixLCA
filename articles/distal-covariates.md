@@ -29,6 +29,7 @@ four continuous biomarkers, an age covariate, and a binary outcome.
 ## Setup
 
 ``` r
+
 data(health_screening)
 hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
 dim(health_screening)
@@ -40,6 +41,7 @@ The dataset has no missing values, so listwise deletion is not needed.
 ## 1. A naive measurement model (no covariates, no distal)
 
 ``` r
+
 hs_naive <- lapply(2:3, function(K) {
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10),
@@ -49,6 +51,7 @@ names(hs_naive) <- paste0("K", 2:3)
 ```
 
 ``` r
+
 compare_models(hs_naive)
 #>    K        LL n_params      AIC      BIC     aBIC   entropy      ICL
 #> K2 2 -9951.459       29 19960.92 20096.77 20004.68 0.7791383 20341.72
@@ -59,6 +62,7 @@ The K=2 model has the lowest BIC and a clean interpretation (low-marker
 vs. high-marker classes). We work with it below.
 
 ``` r
+
 plot(hs_naive$K2, type = "profiles")
 ```
 
@@ -76,6 +80,7 @@ membership depend on age via multinomial logistic regression.
 The simplest specification passes a character vector of variable names:
 
 ``` r
+
 hs_concom_chr <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
@@ -84,6 +89,7 @@ hs_concom_chr <- fit_lca(
 ```
 
 ``` r
+
 hs_concom_chr$concomitant_coefs
 #>                    [,1]
 #> (Intercept)  3.49083450
@@ -98,6 +104,7 @@ profiles to interpret it.
 For inference, pair the coefficients with their standard errors:
 
 ``` r
+
 se <- concomitant_se(hs_concom_chr, health_screening)
 data.frame(
   Estimate = round(hs_concom_chr$concomitant_coefs[, 1], 4),
@@ -118,6 +125,7 @@ anything that works in [`lm()`](https://rdrr.io/r/stats/lm.html) works
 here:
 
 ``` r
+
 hs_concom_fm <- fit_lca(
   health_screening, continuous = hs_vars,
   concomitant = ~ age + I(age^2),
@@ -127,6 +135,7 @@ hs_concom_fm <- fit_lca(
 ```
 
 ``` r
+
 hs_concom_fm$concomitant_coefs
 #>                      [,1]
 #> (Intercept)  3.524422e+00
@@ -141,6 +150,7 @@ consistent with the linear-in-age generative model.
 Other useful forms:
 
 ``` r
+
 # Interaction:
 fit_lca(..., concomitant = ~ age * sex)
 
@@ -160,6 +170,7 @@ input data and would invalidate any downstream distal model that expects
 per-row alignment. Impute or filter before calling:
 
 ``` r
+
 hs_na <- health_screening
 hs_na$age[1:3] <- NA
 fit_lca(hs_na, continuous = hs_vars, concomitant = "age",
@@ -174,6 +185,7 @@ fit_lca(hs_na, continuous = hs_vars, concomitant = "age",
 posteriors for new data using the fitted parameters. Three output types:
 
 ``` r
+
 new_rows <- health_screening[1:5, ]
 prob <- predict(hs_concom_chr, newdata = new_rows)          # default: matrix
 cls  <- predict(hs_concom_chr, newdata = new_rows, type = "class")
@@ -205,6 +217,7 @@ rows are padded with NA so the output length always equals
 `nrow(newdata)`:
 
 ``` r
+
 new_with_na <- health_screening[1:5, ]
 new_with_na$age[c(2, 4)] <- NA
 predict(hs_concom_chr, newdata = new_with_na)
@@ -234,12 +247,14 @@ distal step, no gradient from the distal outcome can contaminate class
 meaning.
 
 ``` r
+
 hs_distal <- distal(hs_concom_chr, health_screening,
                     formula = outcome ~ age,
                     family  = "binomial")
 ```
 
 ``` r
+
 print(hs_distal)
 #> 
 #> Distal Outcome Estimation (BCH Method) - mixLCA
@@ -288,6 +303,7 @@ supports gaussian, binomial, and poisson responses through the `family`
 argument:
 
 ``` r
+
 # Continuous distal outcome:
 distal(hs_concom_chr, my_data, my_continuous_outcome ~ age,
        family = "gaussian")
@@ -301,7 +317,7 @@ The IRLS solver inside
 handles negative BCH weights via eigen-projection plus step-halving (a
 real divergence risk in earlier versions) and reports `NA` standard
 errors when the sandwich estimator goes negative (rather than the
-misleading $p \approx 0$ you get from forcing the variance to zero).
+misleading $`p \approx 0`$ you get from forcing the variance to zero).
 
 ## 5. Penalized covariance (when local dependence is continuous)
 
@@ -310,6 +326,7 @@ to `"penalized"` covariance with `glassoFast` produces exact sparsity in
 the inverse covariance matrix.
 
 ``` r
+
 hs_pen <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
@@ -321,6 +338,7 @@ The default `penalty = "auto"` selects a heuristic value from data
 scale. To request exactly no shrinkage, set `penalty = 0` explicitly.
 
 ``` r
+
 round(hs_pen$continuous_params$covariances[[1]], 2)
 #>        [,1]   [,2]  [,3]  [,4]
 #> [1,] 763.68   0.00  0.00  0.00
@@ -340,6 +358,7 @@ would be over-fitting.
 A typical analysis arc:
 
 ``` r
+
 # 1. Decide K with a naive fit
 fits <- lapply(2:5, function(K)
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
@@ -369,20 +388,24 @@ for the math.
 ## Session info
 
 ``` r
+
 sessionInfo()
-#> R version 4.4.3 (2025-02-28)
-#> Platform: aarch64-apple-darwin20
-#> Running under: macOS Sequoia 15.7.4
+#> R version 4.6.0 (2026-04-24)
+#> Platform: x86_64-pc-linux-gnu
+#> Running under: Ubuntu 24.04.4 LTS
 #> 
 #> Matrix products: default
-#> BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
-#> LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+#> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
 #> 
 #> locale:
-#> [1] C
+#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
 #> 
-#> time zone: America/Chicago
-#> tzcode source: internal
+#> time zone: UTC
+#> tzcode source: system (glibc)
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
@@ -391,33 +414,32 @@ sessionInfo()
 #> [1] mixLCA_1.0.1
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] tidyselect_1.2.1    timeDate_4041.110   dplyr_1.2.0        
-#>  [4] farver_2.1.2        S7_0.2.1            fastmap_1.2.0      
-#>  [7] digest_0.6.37       rpart_4.1.24        timechange_0.3.0   
-#> [10] lifecycle_1.0.5     yardstick_1.3.2     survival_3.8-3     
-#> [13] tidyclust_0.2.4     magrittr_2.0.3      compiler_4.4.3     
-#> [16] rlang_1.1.7         sass_0.4.10         tools_4.4.3        
-#> [19] yaml_2.3.10         data.table_1.17.8   knitr_1.51         
-#> [22] labeling_0.4.3      htmlwidgets_1.6.4   DiceDesign_1.10    
-#> [25] RColorBrewer_1.1-3  parsnip_1.3.2       withr_3.0.2        
-#> [28] purrr_1.1.0         workflows_1.2.0     desc_1.4.3         
-#> [31] nnet_7.3-20         grid_4.4.3          tune_1.3.0         
-#> [34] future_1.70.0       ggplot2_4.0.2       globals_0.18.0     
-#> [37] scales_1.4.0        iterators_1.0.14    MASS_7.3-65        
-#> [40] cli_3.6.5           rmarkdown_2.30      ragg_1.4.0         
-#> [43] generics_0.1.4      future.apply_1.20.2 cachem_1.1.0       
-#> [46] modelenv_0.2.0      splines_4.4.3       dials_1.4.0        
-#> [49] parallel_4.4.3      vctrs_0.7.1         hardhat_1.4.1      
-#> [52] Matrix_1.7-3        jsonlite_2.0.0      listenv_0.9.1      
-#> [55] systemfonts_1.2.3   foreach_1.5.2       gower_1.0.2        
-#> [58] tidyr_1.3.1         jquerylib_0.1.4     recipes_1.3.1      
-#> [61] glue_1.8.0          parallelly_1.45.1   pkgdown_2.2.0      
-#> [64] codetools_0.2-20    rsample_1.3.0       lubridate_1.9.4    
-#> [67] gtable_0.3.6        GPfit_1.0-9         tibble_3.3.0       
-#> [70] pillar_1.11.0       furrr_0.3.1         htmltools_0.5.8.1  
-#> [73] ipred_0.9-15        lava_1.8.1          R6_2.6.1           
-#> [76] textshaping_1.0.1   lhs_1.2.0           evaluate_1.0.4     
-#> [79] lattice_0.22-7      bslib_0.9.0         class_7.3-23       
-#> [82] Rcpp_1.1.0          prodlim_2025.04.28  xfun_0.52          
-#> [85] fs_1.6.7            pkgconfig_2.0.3
+#>  [1] gtable_0.3.6        xfun_0.57           bslib_0.11.0       
+#>  [4] ggplot2_4.0.3       recipes_1.3.2       lattice_0.22-9     
+#>  [7] vctrs_0.7.3         tools_4.6.0         generics_0.1.4     
+#> [10] parallel_4.6.0      tidyclust_0.3.0     tibble_3.3.1       
+#> [13] pkgconfig_2.0.3     Matrix_1.7-5        data.table_1.18.4  
+#> [16] RColorBrewer_1.1-3  S7_0.2.2            desc_1.4.3         
+#> [19] lifecycle_1.0.5     compiler_4.6.0      farver_2.1.2       
+#> [22] textshaping_1.0.5   codetools_0.2-20    DiceDesign_1.10    
+#> [25] htmltools_0.5.9     class_7.3-23        sass_0.4.10        
+#> [28] yaml_2.3.12         tune_2.1.0          prodlim_2026.03.11 
+#> [31] furrr_0.4.0         modelenv_0.2.0      pillar_1.11.1      
+#> [34] pkgdown_2.2.0       jquerylib_0.1.4     tidyr_1.3.2        
+#> [37] MASS_7.3-65         cachem_1.1.0        gower_1.0.2        
+#> [40] yardstick_1.4.0     rpart_4.1.27        mclust_6.1.2       
+#> [43] parallelly_1.47.0   lava_1.9.1          dials_1.4.3        
+#> [46] tidyselect_1.2.1    digest_0.6.39       future_1.70.0      
+#> [49] listenv_0.10.1      dplyr_1.2.1         purrr_1.2.2        
+#> [52] labeling_0.4.3      splines_4.6.0       fastmap_1.2.0      
+#> [55] parsnip_1.6.0       grid_4.6.0          cli_3.6.6          
+#> [58] magrittr_2.0.5      survival_3.8-6      future.apply_1.20.2
+#> [61] withr_3.0.2         scales_1.4.0        timechange_0.4.0   
+#> [64] lubridate_1.9.5     rmarkdown_2.31      globals_0.19.1     
+#> [67] nnet_7.3-20         timeDate_4052.112   ragg_1.5.2         
+#> [70] workflows_1.3.0     evaluate_1.0.5      knitr_1.51         
+#> [73] hardhat_1.4.3       rsample_1.3.2       rlang_1.2.0        
+#> [76] Rcpp_1.1.1-1.1      glue_1.8.1          ipred_0.9-15       
+#> [79] jsonlite_2.0.0      R6_2.6.1            systemfonts_1.3.2  
+#> [82] fs_2.1.0
 ```

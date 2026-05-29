@@ -36,8 +36,8 @@ fit <- fit_lca(voter_perceptions,
                verbose     = FALSE)
 tidy(fit)
 #>     cluster size proportion
-#> 1 Cluster_1  423  0.2114589
-#> 2 Cluster_2  683  0.3413805
-#> 3 Cluster_3  894  0.4471606
+#> 1 Cluster_1  423  0.2114592
+#> 2 Cluster_2  683  0.3413798
+#> 3 Cluster_3  894  0.4471610
 # }
 ```
