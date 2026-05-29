@@ -1,6 +1,6 @@
 # M-Step: Update Concomitant Coefficients
 
-Wraps BFGS optimisation of the multinomial logistic model.
+Wraps BFGS optimization of the multinomial logistic model.
 
 ## Usage
 

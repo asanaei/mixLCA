@@ -1,8 +1,8 @@
 # Control Parameters for mixLCA
 
-Bundles optimiser settings into a single list for use with
+Bundles optimizer settings into a single list for use with
 [`fit_lca`](https://asanaei.github.io/mixLCA/reference/fit_lca.md).
-Defaults reproduce the behaviour of prior beta releases.
+Defaults reproduce the behavior of prior beta releases.
 
 ## Usage
 
@@ -38,9 +38,10 @@ A list of control values.
 ## Reproducibility
 
 [`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md)
-draws from the global RNG state for random initialisation, exactly like
+draws from the global RNG state for random initialization, exactly like
 [`stats::kmeans()`](https://rdrr.io/r/stats/kmeans.html) and
-`uwot::umap()`. To get a reproducible fit, call
+[`uwot::umap()`](https://jlmelville.github.io/uwot/reference/umap.html).
+To get a reproducible fit, call
 [`set.seed()`](https://rdrr.io/r/base/Random.html) before
 [`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md).
 

@@ -1,7 +1,7 @@
 # Soft-Threshold Operator
 
 Applies element-wise soft thresholding: sign(x) \* max(\|x\| - lambda,
-0). Used for L1-penalised covariance estimation in mixLCA.
+0). Used for L1-penalized covariance estimation in mixLCA.
 
 ## Usage
 

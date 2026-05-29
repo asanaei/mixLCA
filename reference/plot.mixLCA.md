@@ -1,6 +1,6 @@
 # Plot Method for mixLCA
 
-Single dispatch surface for all built-in visualisations. The `type`
+Single dispatch surface for all built-in visualizations. The `type`
 argument selects which plot to produce.
 
 ## Usage

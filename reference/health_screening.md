@@ -65,7 +65,7 @@ package. A reproducible generation script is provided in the source tree
 at `data-raw/make-example-data.R`.
 
 We deliberately do not derive this dataset from any real screening
-cohort. Labelling participants by latent "metabolic class" can carry
+cohort. Labeling participants by latent "metabolic class" can carry
 substantive implications that we leave to domain researchers; the
 synthetic construction here avoids importing those framings while
 preserving the joint structure (mixed continuous indicators, antecedent

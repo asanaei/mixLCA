@@ -1,6 +1,6 @@
 # mixLCA: Partitioned Latent Class Analysis
 
-Finite mixture modelling with partitioned architecture for antecedent
+Finite mixture modeling with partitioned architecture for antecedent
 predictors, contemporaneous manifest indicators, and distal outcomes.
 
 ## See also

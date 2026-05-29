@@ -52,7 +52,7 @@ run_em(
 
 - penalty:
 
-  Numeric L1 penalty for penalised dependence.
+  Numeric L1 penalty for penalized dependence.
 
 - max_iter:
 

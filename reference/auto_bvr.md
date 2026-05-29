@@ -8,7 +8,7 @@ Three-phase automated model selection:
 
 - Phase 2a:
 
-  Compare diagonal, penalised, and full covariance structures for
+  Compare diagonal, penalized, and full covariance structures for
   continuous indicators at the selected *K*.
 
 - Phase 2b:

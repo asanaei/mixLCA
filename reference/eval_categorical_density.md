@@ -2,7 +2,7 @@
 
 Computes the log-probability of each observation's categorical
 indicators under class-specific multinomial parameters. Missing values
-are marginalised out (contribute zero to the sum).
+are marginalized out (contribute zero to the sum).
 
 ## Usage
 

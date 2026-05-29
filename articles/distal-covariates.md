@@ -29,7 +29,6 @@ four continuous biomarkers, an age covariate, and a binary outcome.
 ## Setup
 
 ``` r
-
 data(health_screening)
 hs_vars <- c("marker_1", "marker_2", "marker_3", "marker_4")
 dim(health_screening)
@@ -41,7 +40,6 @@ The dataset has no missing values, so listwise deletion is not needed.
 ## 1. A naive measurement model (no covariates, no distal)
 
 ``` r
-
 hs_naive <- lapply(2:3, function(K) {
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
           control = lca_control(n_starts = 10),
@@ -51,7 +49,6 @@ names(hs_naive) <- paste0("K", 2:3)
 ```
 
 ``` r
-
 compare_models(hs_naive)
 #>    K        LL n_params      AIC      BIC     aBIC   entropy      ICL
 #> K2 2 -9951.459       29 19960.92 20096.77 20004.68 0.7791376 20341.72
@@ -62,7 +59,6 @@ The K=2 model has the lowest BIC and a clean interpretation (low-marker
 vs. high-marker classes). We work with it below.
 
 ``` r
-
 plot(hs_naive$K2, type = "profiles")
 ```
 
@@ -80,7 +76,6 @@ membership depend on age via multinomial logistic regression.
 The simplest specification passes a character vector of variable names:
 
 ``` r
-
 hs_concom_chr <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2,
@@ -89,7 +84,6 @@ hs_concom_chr <- fit_lca(
 ```
 
 ``` r
-
 hs_concom_chr$concomitant_coefs
 #>                    [,1]
 #> (Intercept)  3.49083450
@@ -104,7 +98,6 @@ profiles to interpret it.
 For inference, pair the coefficients with their standard errors:
 
 ``` r
-
 se <- concomitant_se(hs_concom_chr, health_screening)
 data.frame(
   Estimate = round(hs_concom_chr$concomitant_coefs[, 1], 4),
@@ -125,7 +118,6 @@ anything that works in [`lm()`](https://rdrr.io/r/stats/lm.html) works
 here:
 
 ``` r
-
 hs_concom_fm <- fit_lca(
   health_screening, continuous = hs_vars,
   concomitant = ~ age + I(age^2),
@@ -135,7 +127,6 @@ hs_concom_fm <- fit_lca(
 ```
 
 ``` r
-
 hs_concom_fm$concomitant_coefs
 #>                      [,1]
 #> (Intercept)  3.524419e+00
@@ -150,7 +141,6 @@ consistent with the linear-in-age generative model.
 Other useful forms:
 
 ``` r
-
 # Interaction:
 fit_lca(..., concomitant = ~ age * sex)
 
@@ -165,12 +155,11 @@ fit_lca(..., concomitant = ~ splines::bs(age, df = 4))
 
 [`fit_lca()`](https://asanaei.github.io/mixLCA/reference/fit_lca.md)
 will refuse to run if any concomitant value is NA. This is by design:
-silently dropping rows would desynchronise `model$posteriors` from your
+silently dropping rows would desynchronize `model$posteriors` from your
 input data and would invalidate any downstream distal model that expects
 per-row alignment. Impute or filter before calling:
 
 ``` r
-
 hs_na <- health_screening
 hs_na$age[1:3] <- NA
 fit_lca(hs_na, continuous = hs_vars, concomitant = "age",
@@ -185,7 +174,6 @@ fit_lca(hs_na, continuous = hs_vars, concomitant = "age",
 posteriors for new data using the fitted parameters. Three output types:
 
 ``` r
-
 new_rows <- health_screening[1:5, ]
 prob <- predict(hs_concom_chr, newdata = new_rows)          # default: matrix
 cls  <- predict(hs_concom_chr, newdata = new_rows, type = "class")
@@ -217,7 +205,6 @@ rows are padded with NA so the output length always equals
 `nrow(newdata)`:
 
 ``` r
-
 new_with_na <- health_screening[1:5, ]
 new_with_na$age[c(2, 4)] <- NA
 predict(hs_concom_chr, newdata = new_with_na)
@@ -247,14 +234,12 @@ distal step, no gradient from the distal outcome can contaminate class
 meaning.
 
 ``` r
-
 hs_distal <- distal(hs_concom_chr, health_screening,
                     formula = outcome ~ age,
                     family  = "binomial")
 ```
 
 ``` r
-
 print(hs_distal)
 #> 
 #> Distal Outcome Estimation (BCH Method) - mixLCA
@@ -303,7 +288,6 @@ supports gaussian, binomial, and poisson responses through the `family`
 argument:
 
 ``` r
-
 # Continuous distal outcome:
 distal(hs_concom_chr, my_data, my_continuous_outcome ~ age,
        family = "gaussian")
@@ -317,7 +301,7 @@ The IRLS solver inside
 handles negative BCH weights via eigen-projection plus step-halving (a
 real divergence risk in earlier versions) and reports `NA` standard
 errors when the sandwich estimator goes negative (rather than the
-misleading $`p \approx 0`$ you get from forcing the variance to zero).
+misleading $p \approx 0$ you get from forcing the variance to zero).
 
 ## 5. Penalized covariance (when local dependence is continuous)
 
@@ -326,7 +310,6 @@ to `"penalized"` covariance with `glassoFast` produces exact sparsity in
 the inverse covariance matrix.
 
 ``` r
-
 hs_pen <- fit_lca(
   health_screening, continuous = hs_vars, concomitant = "age",
   n_classes = 2, dependence = "penalized",
@@ -338,7 +321,6 @@ The default `penalty = "auto"` selects a heuristic value from data
 scale. To request exactly no shrinkage, set `penalty = 0` explicitly.
 
 ``` r
-
 round(hs_pen$continuous_params$covariances[[1]], 2)
 #>         [,1]    [,2]   [,3]  [,4]
 #> [1,] 4033.29 -965.79  44.89  0.00
@@ -358,7 +340,6 @@ would be over-fitting.
 A typical analysis arc:
 
 ``` r
-
 # 1. Decide K with a naive fit
 fits <- lapply(2:5, function(K)
   fit_lca(health_screening, continuous = hs_vars, n_classes = K,
@@ -388,24 +369,20 @@ for the math.
 ## Session info
 
 ``` r
-
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
-#> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> R version 4.4.3 (2025-02-28)
+#> Platform: aarch64-apple-darwin20
+#> Running under: macOS Sequoia 15.7.4
 #> 
 #> Matrix products: default
-#> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
-#> LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.26.so;  LAPACK version 3.12.0
+#> BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+#> LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
 #> 
 #> locale:
-#>  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
-#>  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
-#>  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
-#> [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+#> [1] C
 #> 
-#> time zone: UTC
-#> tzcode source: system (glibc)
+#> time zone: America/Chicago
+#> tzcode source: internal
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
@@ -414,15 +391,16 @@ sessionInfo()
 #> [1] mixLCA_1.0.1
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.1        compiler_4.6.0    
-#>  [5] tidyselect_1.2.1   Rcpp_1.1.1-1.1     jquerylib_0.1.4    systemfonts_1.3.2 
-#>  [9] scales_1.4.0       textshaping_1.0.5  yaml_2.3.12        fastmap_1.2.0     
-#> [13] ggplot2_4.0.3      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
-#> [17] knitr_1.51         tibble_3.3.1       desc_1.4.3         bslib_0.11.0      
-#> [21] pillar_1.11.1      RColorBrewer_1.1-3 rlang_1.2.0        cachem_1.1.0      
-#> [25] xfun_0.57          fs_2.1.0           sass_0.4.10        S7_0.2.2          
-#> [29] cli_3.6.6          pkgdown_2.2.0      withr_3.0.2        magrittr_2.0.5    
-#> [33] digest_0.6.39      grid_4.6.0         lifecycle_1.0.5    vctrs_0.7.3       
-#> [37] evaluate_1.0.5     glue_1.8.1         farver_2.1.2       ragg_1.5.2        
-#> [41] rmarkdown_2.31     tools_4.6.0        pkgconfig_2.0.3    htmltools_0.5.9
+#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0        compiler_4.4.3    
+#>  [5] tidyselect_1.2.1   Rcpp_1.1.0         jquerylib_0.1.4    systemfonts_1.2.3 
+#>  [9] scales_1.4.0       textshaping_1.0.1  yaml_2.3.10        fastmap_1.2.0     
+#> [13] ggplot2_4.0.2      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
+#> [17] knitr_1.51         htmlwidgets_1.6.4  tibble_3.3.0       desc_1.4.3        
+#> [21] bslib_0.9.0        pillar_1.11.0      RColorBrewer_1.1-3 rlang_1.1.7       
+#> [25] cachem_1.1.0       xfun_0.52          fs_1.6.7           sass_0.4.10       
+#> [29] S7_0.2.1           cli_3.6.5          pkgdown_2.2.0      withr_3.0.2       
+#> [33] magrittr_2.0.3     digest_0.6.37      grid_4.4.3         lifecycle_1.0.5   
+#> [37] vctrs_0.7.1        evaluate_1.0.4     glue_1.8.0         farver_2.1.2      
+#> [41] ragg_1.4.0         rmarkdown_2.30     tools_4.4.3        pkgconfig_2.0.3   
+#> [45] htmltools_0.5.8.1
 ```

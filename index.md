@@ -9,13 +9,13 @@ Website: <https://asanaei.github.io/mixLCA/>
 ## What it does
 
 - **Mixed indicators.** Continuous (multivariate normal with optional
-  graphical-lasso penalisation) and categorical (product-multinomial),
+  graphical-lasso penalization) and categorical (product-multinomial),
   jointly or alone.
 - **Partitioned architecture.** Antecedent concomitant predictors enter
   via multinomial logistic regression on class membership;
   contemporaneous manifest indicators define the measurement model;
   subsequent distal outcomes are estimated separately under
-  Bollen-Croon-Hagenaars (BCH) inverse-classification-error weighting.
+  Bolck-Croon-Hagenaars (BCH) inverse-classification-error weighting.
 - **Local dependence.** Direct effects between categorical pairs
   (Hagenaars-Vermunt specification search via
   [`auto_bvr()`](https://asanaei.github.io/mixLCA/reference/auto_bvr.md))
@@ -28,7 +28,6 @@ Website: <https://asanaei.github.io/mixLCA/>
 ## Installation
 
 ``` r
-
 # install.packages("remotes")
 remotes::install_github("asanaei/mixLCA")
 ```
@@ -39,7 +38,6 @@ working compiler toolchain.
 ## Quick start
 
 ``` r
-
 library(mixLCA)
 
 data("PimaIndiansDiabetes2", package = "mlbench")
@@ -77,7 +75,6 @@ The methodological paper for SLD is in preparation. For now, please cite
 the package:
 
 ``` r
-
 citation("mixLCA")
 ```
 

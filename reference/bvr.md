@@ -3,7 +3,7 @@
 Computes the residual covariance between continuous indicators after
 subtracting the model-implied mixture covariance. Large residuals signal
 local dependence violations not captured by the current model. Use
-`plot_bvr()` to visualise the residual network.
+`plot_bvr()` to visualize the residual network.
 
 ## Usage
 
